@@ -343,9 +343,11 @@ static void set_log_file_name_func(char *base, char *f, size_t fsz)
 
 static void sighup_callback_handler(int signum)
 {
+#if (defined(__unix__) || defined(unix) || defined(_POSIX))
 	if(signum == SIGHUP) {
 		to_reset_log_file = 1;
 	}
+#endif
 }
 
 static void set_rtpfile(void)
@@ -359,7 +361,9 @@ static void set_rtpfile(void)
 	if(to_syslog) {
 		return;
 	} else if (!_rtpfile) {
+#if (defined(__unix__) || defined(unix) || defined(_POSIX))
 		signal(SIGHUP, sighup_callback_handler);
+#endif
 		if(log_fn_base[0]) {
 			if(!strcmp(log_fn_base,"syslog")) {
 				_rtpfile = stdout;
@@ -498,6 +502,9 @@ void rollover_logfile(void)
 
 static int get_syslog_level(TURN_LOG_LEVEL level)
 {
+#if defined(_WINDOWS) || defined(WIN32)
+	return level;
+#else
 	switch(level) {
 	case TURN_LOG_LEVEL_CONTROL:
 		return LOG_NOTICE;
@@ -509,6 +516,7 @@ static int get_syslog_level(TURN_LOG_LEVEL level)
 		;
 	};
 	return LOG_INFO;
+#endif
 }
 
 void turn_log_func_default(TURN_LOG_LEVEL level, const char* format, ...)
