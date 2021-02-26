@@ -36,9 +36,11 @@
 
 #include <time.h>
 
+#if (defined(__unix__) || defined(unix))
 #include <pthread.h>
-
 #include <syslog.h>
+#endif
+
 #include <stdarg.h>
 
 #include <stdlib.h>
@@ -70,10 +72,14 @@ static inline turn_time_t log_time(void)
 int turn_mutex_lock(const turn_mutex *mutex) {
   if(mutex && mutex->mutex && (mutex->data == MAGIC_CODE)) {
     int ret = 0;
+#if defined(_WINDOWS) || defined(WIN32)
+	ret = WaitForSingleObject(mutex->mutex, INFINITE);
+#else
     ret = pthread_mutex_lock((pthread_mutex_t*)mutex->mutex);
-    if(ret<0) {
-      perror("Mutex lock");
-    }
+#endif
+	if (ret < 0) {
+		perror("Mutex lock");
+	}
     return ret;
   } else {
     printf("Uninitialized mutex\n");
@@ -84,7 +90,13 @@ int turn_mutex_lock(const turn_mutex *mutex) {
 int turn_mutex_unlock(const turn_mutex *mutex) {
   if(mutex && mutex->mutex && (mutex->data == MAGIC_CODE)) {
     int ret = 0;
+#if defined(_WINDOWS) || defined(WIN32)
+	if (!ReleaseMutex(mutex->mutex))
+		ret = -1;
+#else
     ret = pthread_mutex_unlock((pthread_mutex_t*)mutex->mutex);
+#endif
+
     if(ret<0) {
       perror("Mutex unlock");
     }
@@ -97,9 +109,13 @@ int turn_mutex_unlock(const turn_mutex *mutex) {
 
 int turn_mutex_init(turn_mutex* mutex) {
   if(mutex) {
-    mutex->data=MAGIC_CODE;
+	mutex->data = MAGIC_CODE;
+#if defined(_WINDOWS) || defined(WIN32)
+	mutex->mutex = CreateMutex(NULL, FALSE, NULL);
+#else
     mutex->mutex=malloc(sizeof(pthread_mutex_t));
     pthread_mutex_init((pthread_mutex_t*)mutex->mutex,NULL);
+#endif
     return 0;
   } else {
     return -1;
@@ -109,6 +125,9 @@ int turn_mutex_init(turn_mutex* mutex) {
 int turn_mutex_init_recursive(turn_mutex* mutex) {
 	int ret = -1;
 	if (mutex) {
+#if defined(_WINDOWS) || defined(WIN32)
+		ret = turn_mutex_init(mutex);
+#else
 		pthread_mutexattr_t attr;
 		if (pthread_mutexattr_init(&attr) < 0) {
 			perror("Cannot init mutex attr");
@@ -128,6 +147,7 @@ int turn_mutex_init_recursive(turn_mutex* mutex) {
 			}
 			pthread_mutexattr_destroy(&attr);
 		}
+#endif
 	}
   return ret;
 }
@@ -135,8 +155,13 @@ int turn_mutex_init_recursive(turn_mutex* mutex) {
 int turn_mutex_destroy(turn_mutex* mutex) {
   if(mutex && mutex->mutex && mutex->data == MAGIC_CODE) {
     int ret = 0;
+#if defined(_WINDOWS) || defined(WIN32)
+	if (!CloseHandle(mutex->mutex))
+		ret = -1;
+#else
     ret = pthread_mutex_destroy((pthread_mutex_t*)(mutex->mutex));
     free(mutex->mutex);
+#endif
     mutex->mutex=NULL;
     mutex->data=0;
     return ret;
