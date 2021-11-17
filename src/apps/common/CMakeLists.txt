@@ -18,10 +18,15 @@ set(HEADER_FILES
 if(MSVC)
     list(APPEND COMMON_DEFINED MSVC)
 endif()
+
+find_package(OpenSSL REQUIRED)
+list(APPEND COMMON_LIBS OpenSSL::SSL OpenSSL::Crypto)
+
 find_package(Threads)
 if(Threads_FOUND)
-    set(COMMON_LIBS Threads::Threads)
+    list(APPEND COMMON_LIBS Threads::Threads)
 endif()
+
 #set(libevent_components core extra openssl)
 #if(NOT WIN32)
 #    list(APPEND libevent_components pthreads)
