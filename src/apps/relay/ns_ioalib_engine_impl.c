@@ -912,9 +912,8 @@ ioa_socket_handle create_unbound_relay_ioa_socket(ioa_engine_handle e, int famil
 		return NULL;
 	}
 
-	ret = (ioa_socket*)malloc(sizeof(ioa_socket));
-	bzero(ret,sizeof(ioa_socket));
-
+	ret = (ioa_socket*)calloc(sizeof(ioa_socket), 1);
+	
 	ret->magic = SOCKET_MAGIC;
 
 	ret->fd = fd;
@@ -1356,9 +1355,8 @@ ioa_socket_handle create_ioa_socket_from_fd(ioa_engine_handle e,
 		return NULL;
 	}
 
-	ret = (ioa_socket*)malloc(sizeof(ioa_socket));
-	bzero(ret,sizeof(ioa_socket));
-
+	ret = (ioa_socket*)calloc(sizeof(ioa_socket), 1);
+	
 	ret->magic = SOCKET_MAGIC;
 
 	ret->fd = fd;
@@ -1622,15 +1620,13 @@ ioa_socket_handle detach_ioa_socket(ioa_socket_handle s)
 
 		ioa_network_buffer_delete(s->e, s->defer_nbh);
 
-		ret = (ioa_socket*)malloc(sizeof(ioa_socket));
+		ret = (ioa_socket*)calloc(sizeof(ioa_socket), 1);
 		if(!ret) {
 			TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR,"%s: Cannot allocate new socket structure\n",__FUNCTION__);
 			if(udp_fd>=0)
 				close(udp_fd);
 			return ret;
 		}
-
-		bzero(ret,sizeof(ioa_socket));
 
 		ret->magic = SOCKET_MAGIC;
 
@@ -2655,7 +2651,7 @@ static int socket_input_worker(ioa_socket_handle s)
 			if(s->read_cb) {
 				ioa_net_data nd;
 
-				bzero(&nd,sizeof(ioa_net_data));
+				memset(&nd, 0, sizeof(ioa_net_data));
 				addr_cpy(&(nd.src_addr),&remote_addr);
 				nd.nbh = buf_elem;
 				nd.recv_ttl = ttl;
@@ -3899,12 +3895,11 @@ struct _super_memory {
 static void init_super_memory_region(super_memory_t *r)
 {
 	if(r) {
-		bzero(r,sizeof(super_memory_t));
+		memset(r, 0, sizeof(super_memory_t));
 
 		r->super_memory = (char**)malloc(sizeof(char*));
-		r->super_memory[0] = (char*)malloc(TURN_SM_SIZE);
-		bzero(r->super_memory[0],TURN_SM_SIZE);
-
+		r->super_memory[0] = (char*)calloc(1, TURN_SM_SIZE);
+		
 		r->sm_allocated = (size_t*)malloc(sizeof(size_t*));
 		r->sm_allocated[0] = 0;
 
@@ -3939,8 +3934,7 @@ void* allocate_super_memory_region_func(super_memory_t *r, size_t size, const ch
 	void *ret = NULL;
 
 	if(!r) {
-		ret = malloc(size);
-		bzero(ret, size);
+		ret = calloc(1, size);
 		return ret;
 	}
 
@@ -3973,8 +3967,7 @@ void* allocate_super_memory_region_func(super_memory_t *r, size_t size, const ch
 		if(!region) {
 			r->sm_chunk += 1;
 			r->super_memory = (char**)realloc(r->super_memory,(r->sm_chunk+1) * sizeof(char*));
-			r->super_memory[r->sm_chunk] = (char*)malloc(TURN_SM_SIZE);
-			bzero(r->super_memory[r->sm_chunk],TURN_SM_SIZE);
+			r->super_memory[r->sm_chunk] = (char*)calloc(1, TURN_SM_SIZE);
 			r->sm_allocated = (size_t*)realloc(r->sm_allocated,(r->sm_chunk+1) * sizeof(size_t*));
 			r->sm_allocated[r->sm_chunk] = 0;
 			region = r->super_memory[r->sm_chunk];
@@ -3984,7 +3977,7 @@ void* allocate_super_memory_region_func(super_memory_t *r, size_t size, const ch
 		{
 			char* ptr = region + *rsz;
 
-			bzero(ptr, size);
+			memset(ptr, 0, size);
 
 			*rsz += size;
 
@@ -3995,8 +3988,7 @@ void* allocate_super_memory_region_func(super_memory_t *r, size_t size, const ch
 	TURN_MUTEX_UNLOCK(&r->mutex_sm);
 
 	if(!ret) {
-		ret = malloc(size);
-		bzero(ret, size);
+		ret = calloc(1, size);
 	}
 
 	return ret;

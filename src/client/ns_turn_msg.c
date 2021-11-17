@@ -624,7 +624,7 @@ uint16_t stun_make_error_response(uint16_t method) {
 
 void stun_init_buffer_str(uint8_t *buf, size_t *len) {
   *len=STUN_HEADER_LENGTH;
-  bzero(buf,*len);
+  memset(buf, 0, *len);
 }
 
 void stun_init_command_str(uint16_t message_type, uint8_t* buf, size_t *len) {
@@ -1114,7 +1114,7 @@ uint16_t stun_set_channel_bind_request_str(uint8_t* buf, size_t *len,
   
   if(!peer_addr) {
     ioa_addr ca;
-    bzero(&ca,sizeof(ioa_addr));
+    memset(&ca, 0, sizeof(ioa_addr));
     
     if(stun_attr_add_addr_str(buf,len,STUN_ATTRIBUTE_XOR_PEER_ADDRESS, &ca)<0) return 0;
   } else {
@@ -2061,7 +2061,7 @@ int stun_attr_get_padding_len_str(stun_attr_ref attr) {
 int stun_attr_add_padding_str(uint8_t *buf, size_t *len, uint16_t padding_len)
 {
 	uint8_t avalue[0xFFFF];
-	bzero(avalue,padding_len);
+	memset(avalue, 0, padding_len);
 
 	return stun_attr_add_str(buf, len, STUN_ATTRIBUTE_PADDING, avalue, padding_len);
 }
@@ -2182,7 +2182,7 @@ int convert_oauth_key_data(const oauth_key_data *oakd0, oauth_key *key, char *er
 			return -1;
 		}
 
-		bzero(key,sizeof(oauth_key));
+		memset(key, 0, sizeof(oauth_key));
 
 		STRCPY(key->kid,oakd->kid);
 
@@ -2316,7 +2316,7 @@ int encode_oauth_token_normal(const uint8_t *server_name, encoded_oauth_token *e
 	if(server_name && etoken && key && dtoken && (dtoken->enc_block.key_length<=128)) {
 
 		unsigned char orig_field[MAX_ENCODED_OAUTH_TOKEN_SIZE];
-		bzero(orig_field,sizeof(orig_field));
+		memset(orig_field, 0, sizeof(orig_field));
 
 		size_t len = 0;
 		*((uint16_t*)(orig_field+len)) = nswap16(dtoken->enc_block.key_length);
@@ -2479,7 +2479,7 @@ static int encode_oauth_token_gcm(const uint8_t *server_name, encoded_oauth_toke
 	if(server_name && etoken && key && dtoken && (dtoken->enc_block.key_length<=MAXSHASIZE)) {
 
 		unsigned char orig_field[MAX_ENCODED_OAUTH_TOKEN_SIZE];
-		bzero(orig_field,sizeof(orig_field));
+		memset(orig_field, 0, sizeof(orig_field));
 
 		unsigned char nonce[OAUTH_GCM_NONCE_SIZE];
 		if(nonce0) {
