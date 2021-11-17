@@ -112,7 +112,8 @@ DH_2066, "", "", "",
 0,
 #endif
 
-NULL, PTHREAD_MUTEX_INITIALIZER,
+NULL,
+{0, NULL},
 
 //////////////// Common params ////////////////////
 TURN_VERBOSE_NONE, /* verbose */
@@ -2639,7 +2640,7 @@ int main(int argc, char **argv)
 static char some_buffer[65536];
 
 //array larger than anything that OpenSSL may need:
-static pthread_mutex_t mutex_buf[256];
+static TURN_MUTEX_DECLARE(mutex_buf[256]);
 static int mutex_buf_initialized = 0;
 
 void coturn_locking_function(int mode, int n, const char *file, int line);
@@ -2648,9 +2649,9 @@ void coturn_locking_function(int mode, int n, const char *file, int line) {
   UNUSED_ARG(line);
   if(mutex_buf_initialized && (n < CRYPTO_num_locks())) {
 	  if (mode & CRYPTO_LOCK)
-		  pthread_mutex_lock(&(mutex_buf[n]));
+		  TURN_MUTEX_LOCK(&(mutex_buf[n]));
 	  else
-		  pthread_mutex_unlock(&(mutex_buf[n]));
+		  TURN_MUTEX_UNLOCK(&(mutex_buf[n]));
   }
 }
 
@@ -2673,6 +2674,8 @@ unsigned long coturn_id_function(void)
 
 static int THREAD_setup(void) {
 
+	TURN_MUTEX_INIT(&turn_params.tls_mutex);
+
 #if defined(OPENSSL_THREADS)
 
 	int i;
@@ -2680,7 +2683,7 @@ static int THREAD_setup(void) {
 	some_buffer[0] = 0;
 
 	for (i = 0; i < CRYPTO_num_locks(); i++) {
-		pthread_mutex_init(&(mutex_buf[i]), NULL);
+		TURN_MUTEX_INIT(&(mutex_buf[i]));
 	}
 
 	mutex_buf_initialized = 1;
@@ -2715,7 +2718,7 @@ int THREAD_cleanup(void) {
 
   CRYPTO_set_locking_callback(NULL);
   for (i = 0; i < CRYPTO_num_locks(); i++) {
-	  pthread_mutex_destroy(&(mutex_buf[i]));
+	  TURN_MUTEX_DESTROY(&(mutex_buf[i]));
   }
 
   mutex_buf_initialized = 0;
@@ -3233,7 +3236,7 @@ static void openssl_setup(void)
 
 static void openssl_load_certificates(void)
 {
-	pthread_mutex_lock(&turn_params.tls_mutex);
+	TURN_MUTEX_LOCK(&turn_params.tls_mutex);
 	if(!turn_params.no_tls) {
 		set_ctx(&turn_params.tls_ctx_ssl23,"SSL23",SSLv23_server_method()); /*compatibility mode */
 		if(!turn_params.no_tlsv1) {
@@ -3275,7 +3278,7 @@ static void openssl_load_certificates(void)
 
 #endif
 	}
-	pthread_mutex_unlock(&turn_params.tls_mutex);
+	TURN_MUTEX_UNLOCK(&turn_params.tls_mutex);
 }
 
 static void reload_ssl_certs(evutil_socket_t sock, short events, void *args)
