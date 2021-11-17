@@ -35,24 +35,28 @@
 
 #include <event2/event.h>
 
+#if defined(__unix__) || defined(unix) || defined(__APPLE__) \
+	|| defined(__DARWIN__) || defined(__MACH__)
+#include <unistd.h>
+#include <ifaddrs.h>
+#include <getopt.h>
+#include <libgen.h>
+#include <pthread.h>
+#include <sys/time.h>
+#include <sys/resource.h>
+#endif
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-#include <unistd.h>
+
 #include <limits.h>
-#include <ifaddrs.h>
-#include <getopt.h>
 #include <locale.h>
-#include <libgen.h>
 #include <fcntl.h>
-
 #include <signal.h>
-
 #include <sys/types.h>
-#include <sys/time.h>
 #include <sys/stat.h>
-#include <sys/resource.h>
 
 #if !defined(TURN_NO_SCTP) && defined(TURN_SCTP_INCLUDE)
 #include TURN_SCTP_INCLUDE
@@ -82,7 +86,12 @@ void read_spare_buffer(evutil_socket_t fd)
 {
 	if(fd >= 0) {
 		static char buffer[65536];
+#if defined(MSVC)
+        //TODO: add set no-block
+		recv(fd, buffer, sizeof(buffer), 0);
+#else
 		recv(fd, buffer, sizeof(buffer), MSG_DONTWAIT);
+#endif
 	}
 }
 
@@ -697,12 +706,15 @@ int handle_socket_error() {
      * Must close connection.
      */
     return 0;
+#if defined(__unix__) || defined(unix) || defined(__APPLE__) \
+	|| defined(__DARWIN__) || defined(__MACH__)
   case EHOSTDOWN:
     /* Host is down.
      * Just ignore, might be an attacker
      * sending fake ICMP messages.
      */
     return 1;
+#endif
   case ECONNRESET:
   case ECONNREFUSED:
     /* Connection reset by peer. */
@@ -886,10 +898,12 @@ char* find_config_file(const char *config_file, int print_file_name)
 
 void ignore_sigpipe(void)
 {
+#if defined(__linux__)
 	/* Ignore SIGPIPE from TCP sockets */
 	if(signal(SIGPIPE, SIG_IGN) == SIG_ERR) {
 		perror("Cannot set SIGPIPE handler");
 	}
+#endif
 }
 
 static uint64_t turn_getRandTime(void) {
@@ -913,7 +927,7 @@ unsigned long set_system_parameters(int max_resources)
 	build_base64_decoding_table();
 
 	ignore_sigpipe();
-
+#if defined(__linux__)
 	if(max_resources) {
 		struct rlimit rlim;
 		if(getrlimit(RLIMIT_NOFILE, &rlim)<0) {
@@ -926,7 +940,7 @@ unsigned long set_system_parameters(int max_resources)
 			return (unsigned long)rlim.rlim_cur;
 		}
 	}
-
+#endif
 	return 0;
 }
 
