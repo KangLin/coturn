@@ -1465,6 +1465,7 @@ static void set_option(int c, char *value)
 		if(turn_params.verbose != TURN_VERBOSE_EXTRA){
 			if(get_bool_value(value)) {
 				turn_params.verbose = TURN_VERBOSE_NORMAL;
+				_log_file_line_set = 1;
 			} else {
 				turn_params.verbose = TURN_VERBOSE_NONE;
 			}

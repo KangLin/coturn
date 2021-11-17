@@ -32,8 +32,7 @@
 #define __TURN_ULIB__
 
 #if !defined(TURN_LOG_FUNC)
-//#define TURN_LOG_FUNC(level, ...) printf (__VA_ARGS__)
-#define TURN_LOG_FUNC turn_log_func_default
+#define TURN_LOG_FUNC(level, ...) turn_log_func_default(__FILE__, __LINE__, level, __VA_ARGS__)
 #endif
 
 #include "ns_turn_ioaddr.h"
@@ -45,10 +44,11 @@ extern "C" {
 //////////////////////// LOG //////////////////////////
 
 typedef enum {
-  TURN_LOG_LEVEL_INFO = 0,
-  TURN_LOG_LEVEL_CONTROL,
-  TURN_LOG_LEVEL_WARNING,
-  TURN_LOG_LEVEL_ERROR
+	TURN_LOG_LEVEL_DEBUG = 0,
+	TURN_LOG_LEVEL_INFO,
+	TURN_LOG_LEVEL_CONTROL,
+	TURN_LOG_LEVEL_WARNING,
+	TURN_LOG_LEVEL_ERROR
 } TURN_LOG_LEVEL;
 
 #define TURN_VERBOSE_NONE (0)
@@ -65,11 +65,12 @@ void set_syslog_facility(char *val);
 
 void set_turn_log_timestamp_format(char* new_format);
 
-void turn_log_func_default(TURN_LOG_LEVEL level, const char* format, ...);
+void turn_log_func_default(char* file, int line, TURN_LOG_LEVEL level, const char* format, ...);
 
 void addr_debug_print(int verbose, const ioa_addr *addr, const char* s);
 
 /* Log */
+extern volatile int _log_file_line_set;
 
 extern volatile int _log_time_value_set;
 extern volatile turn_time_t _log_time_value;
