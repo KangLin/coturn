@@ -15,6 +15,9 @@ set(HEADER_FILES
     stun_buffer.h
     )
 
+if(MSVC)
+    list(APPEND COMMON_DEFINED MSVC)
+endif()
 find_package(Threads)
 if(Threads_FOUND)
     set(COMMON_LIBS Threads::Threads)
