@@ -2,8 +2,6 @@
 
 project(turnclient)
 
-find_package(OpenSSL REQUIRED)
-
 set(HEADER_FILES
     ${CMAKE_SOURCE_DIR}/src/ns_turn_defs.h
     ${CMAKE_SOURCE_DIR}/src/client++/TurnMsgLib.h
@@ -22,7 +20,7 @@ set(SOURCE_FILES
 
 add_library(${PROJECT_NAME} ${SOURCE_FILES} ${HEADER_FILES})
 
-target_link_libraries(${PROJECT_NAME} PUBLIC turncommon OpenSSL::SSL OpenSSL::Crypto)
+target_link_libraries(${PROJECT_NAME} PUBLIC turncommon)
 
 # Install head files
 set_target_properties(${PROJECT_NAME} PROPERTIES
