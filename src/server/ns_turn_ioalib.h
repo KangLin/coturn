@@ -60,6 +60,7 @@ struct _turn_mutex {
 typedef struct _turn_mutex turn_mutex;
 
 int turn_mutex_init(turn_mutex* mutex);
+//TODO: This feature is not available in MSVC. Do you want to delete it?
 int turn_mutex_init_recursive(turn_mutex* mutex);
 
 int turn_mutex_lock(const turn_mutex *mutex);
@@ -69,6 +70,7 @@ int turn_mutex_destroy(turn_mutex* mutex);
 
 #define TURN_MUTEX_DECLARE(mutex) turn_mutex mutex;
 #define TURN_MUTEX_INIT(mutex) turn_mutex_init(mutex)
+//TODO: This feature is not available in MSVC. Do you want to delete it?
 #define TURN_MUTEX_INIT_RECURSIVE(mutex) turn_mutex_init_recursive(mutex)
 #define TURN_MUTEX_LOCK(mutex) turn_mutex_lock(mutex)
 #define TURN_MUTEX_UNLOCK(mutex) turn_mutex_unlock(mutex)
