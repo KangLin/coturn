@@ -36,7 +36,8 @@
 
 #include <time.h>
 
-#if defined(__unix__)
+#if defined(__unix__) || defined(unix) || defined(__APPLE__) \
+    || defined(__DARWIN__) || defined(__MACH__)
 	#include <pthread.h>
 	#include <syslog.h>
 #endif
@@ -353,9 +354,12 @@ static void set_log_file_name_func(char *base, char *f, size_t fsz)
 
 static void sighup_callback_handler(int signum)
 {
+#if defined(__unix__) || defined(unix) || defined(__APPLE__) \
+	|| defined(__DARWIN__) || defined(__MACH__)
 	if(signum == SIGHUP) {
 		to_reset_log_file = 1;
 	}
+#endif
 }
 
 static void set_rtpfile(void)
@@ -369,7 +373,12 @@ static void set_rtpfile(void)
 	if(to_syslog) {
 		return;
 	} else if (!_rtpfile) {
+
+#if defined(__unix__) || defined(unix) || defined(__APPLE__) \
+		|| defined(__DARWIN__) || defined(__MACH__)
 		signal(SIGHUP, sighup_callback_handler);
+#endif
+
 		if(log_fn_base[0]) {
 			if(!strcmp(log_fn_base,"syslog")) {
 				_rtpfile = stdout;
@@ -508,6 +517,8 @@ void rollover_logfile(void)
 
 static int get_syslog_level(TURN_LOG_LEVEL level)
 {
+#if defined(__unix__) || defined(unix) || defined(__APPLE__) \
+	|| defined(__DARWIN__) || defined(__MACH__)
 	switch(level) {
 	case TURN_LOG_LEVEL_CONTROL:
 		return LOG_NOTICE;
@@ -519,6 +530,8 @@ static int get_syslog_level(TURN_LOG_LEVEL level)
 		;
 	};
 	return LOG_INFO;
+#endif
+	return level;
 }
 
 void turn_log_func_default(TURN_LOG_LEVEL level, const char* format, ...)
