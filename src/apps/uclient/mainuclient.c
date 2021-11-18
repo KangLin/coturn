@@ -39,13 +39,15 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-#include <unistd.h>
+
+#if defined(MSVC)
 #include <getopt.h>
+#else
+#include <unistd.h>
+#endif
 
 #include <sys/types.h>
 #include <sys/stat.h>
-
-#include "ns_turn_openssl.h"
 
 /////////////// extern definitions /////////////////////
 
