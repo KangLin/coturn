@@ -34,12 +34,12 @@
 #include "ns_turn_utils.h"
 #include "session.h"
 
+#if defined(__linux__)
 #include <unistd.h>
-#include <time.h>
-
-#include "ns_turn_openssl.h"
-
 #include <sys/select.h>
+#endif
+
+#include <time.h>
 
 static int verbose_packets=0;
 
