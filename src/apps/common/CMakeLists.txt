@@ -17,6 +17,9 @@ set(HEADER_FILES
 
 if(MSVC)
     list(APPEND COMMON_DEFINED MSVC)
+    list(APPEND COMMON_INCLUDE_DIR $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/apps/common/win>)
+    list(APPEND SOURCE_FILES win/getopt.c)
+    list(APPEND HEADER_FILES win/getopt.h)
 endif()
 
 find_package(OpenSSL REQUIRED)
