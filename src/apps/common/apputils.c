@@ -37,13 +37,18 @@
 
 #if defined(__unix__) || defined(unix) || defined(__APPLE__) \
 	|| defined(__DARWIN__) || defined(__MACH__)
-#include <unistd.h>
 #include <ifaddrs.h>
 #include <getopt.h>
 #include <libgen.h>
 #include <pthread.h>
 #include <sys/time.h>
 #include <sys/resource.h>
+#endif
+
+#if defined(MSVC)
+#include <direct.h>
+#else
+#include <unistd.h>
 #endif
 
 #include <stdlib.h>

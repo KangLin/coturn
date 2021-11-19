@@ -32,21 +32,32 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+
+#if defined(MSVC)
+#include <direct.h>
+#else
 #include <unistd.h>
-#include <limits.h>
+#endif
+
+#if defined(__unix__) || defined(unix) || defined(__APPLE__) \
+	|| defined(__DARWIN__) || defined(__MACH__)
 #include <ifaddrs.h>
+#include <libgen.h>
+#include <sys/resource.h>
+#include <sys/time.h>
+#endif
+
+#include <limits.h>
+
 #include <getopt.h>
 #include <locale.h>
-#include <libgen.h>
 
 #include <signal.h>
 
 #include "libtelnet.h"
 
 #include <sys/types.h>
-#include <sys/time.h>
 #include <sys/stat.h>
-#include <sys/resource.h>
 
 #include <event2/bufferevent.h>
 #include <event2/buffer.h>
