@@ -35,12 +35,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-#include <unistd.h>
 #include <limits.h>
-#include <ifaddrs.h>
-#include <getopt.h>
+
 #include <locale.h>
-#include <libgen.h>
 
 #include <pthread.h>
 #include <sched.h>
@@ -48,8 +45,13 @@
 #include <signal.h>
 
 #include <sys/types.h>
-#include <sys/time.h>
 #include <sys/stat.h>
+
+#include <getopt.h>
+#include <unistd.h>
+#include <ifaddrs.h>
+#include <libgen.h>
+#include <sys/time.h>
 #include <sys/resource.h>
 #include <sys/utsname.h>
 

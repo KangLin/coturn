@@ -33,7 +33,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+
+#if defined(MSVC)
+#include <getopt.h>
+#else
 #include <unistd.h>
+#endif
 
 #include "ns_turn_utils.h"
 #include "apputils.h"
