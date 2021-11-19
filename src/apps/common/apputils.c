@@ -921,7 +921,12 @@ static uint64_t turn_getRandTime(void) {
 
 unsigned long set_system_parameters(int max_resources)
 {
+#if defined(MSVC)
+	srand((unsigned int)(turn_getRandTime() + (unsigned int)((long)(&turn_getRandTime))));
+#else
 	srandom((unsigned int) (turn_getRandTime() + (unsigned int)((long)(&turn_getRandTime))));
+#endif
+
 	setlocale(LC_ALL, "C");
 
 	build_base64_decoding_table();
