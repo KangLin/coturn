@@ -1078,14 +1078,14 @@ void convert_oauth_key_data_raw(const oauth_key_data_raw *raw, oauth_key_data *o
 		oakd->timestamp = (turn_time_t)raw->timestamp;
 		oakd->lifetime = raw->lifetime;
 
-		bcopy(raw->as_rs_alg,oakd->as_rs_alg,sizeof(oakd->as_rs_alg));
-		bcopy(raw->kid,oakd->kid,sizeof(oakd->kid));
+		memmove(oakd->as_rs_alg, raw->as_rs_alg, sizeof(oakd->as_rs_alg));
+		memmove(oakd->kid, raw->kid, sizeof(oakd->kid));
 
 		if(raw->ikm_key[0]) {
 			size_t ikm_key_size = 0;
 			char *ikm_key = (char*)base64_decode(raw->ikm_key,strlen(raw->ikm_key),&ikm_key_size);
 			if(ikm_key) {
-				bcopy(ikm_key,oakd->ikm_key,ikm_key_size);
+				memmove(oakd->ikm_key, ikm_key, ikm_key_size);
 				oakd->ikm_key_size = ikm_key_size;
 				free(ikm_key);
 			}

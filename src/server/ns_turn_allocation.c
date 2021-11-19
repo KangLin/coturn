@@ -576,7 +576,7 @@ tcp_connection *create_tcp_connection(uint8_t server_id, allocation *a, stun_tid
 	tcp_connection *tc = (tcp_connection*)calloc(sizeof(tcp_connection), 1);
 	addr_cpy(&(tc->peer_addr),peer_addr);
 	if(tid)
-		bcopy(tid,&(tc->tid),sizeof(stun_tid));
+		memmove(&(tc->tid), tid, sizeof(stun_tid));
 	tc->owner = a;
 
 	int found = 0;
