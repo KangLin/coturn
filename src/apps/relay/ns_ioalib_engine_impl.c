@@ -3907,7 +3907,7 @@ static void init_super_memory_region(super_memory_t *r)
 		r->sm_chunk = 0;
 
 		while(r->id == 0)
-			r->id = (uint32_t)random();
+			r->id = (uint32_t)turn_random();
 
 		TURN_MUTEX_INIT(&r->mutex_sm);
 	}
