@@ -46,7 +46,6 @@
 #if defined(MSVC)
 #include <ws2tcpip.h>
 #include <Windows.h>
-#include "getopt.h"
 #else
 #include <sys/socket.h>
 #include <netinet/in.h>

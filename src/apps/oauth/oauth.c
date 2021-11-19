@@ -33,8 +33,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-#include <unistd.h>
 #include <getopt.h>
+#include <unistd.h>
 #include <stddef.h>
 
 #include "ns_turn_utils.h"
