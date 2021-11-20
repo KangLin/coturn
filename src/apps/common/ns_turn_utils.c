@@ -194,6 +194,10 @@ static char* str_fac[]={"LOG_AUTH","LOG_CRON","LOG_DAEMON",
 			"LOG_AUTHPRIV","LOG_FTP","LOG_SYSLOG",
 			0};
 
+static int syslog_facility = 0;
+
+#if defined(__unix__) || defined(unix) || defined(__APPLE__) \
+		|| defined(__DARWIN__) || defined(__MACH__)
 static int int_fac[]={LOG_AUTH ,  LOG_CRON , LOG_DAEMON ,
 		    LOG_KERN , LOG_LOCAL0 , LOG_LOCAL1 ,
 		    LOG_LOCAL2 , LOG_LOCAL3 , LOG_LOCAL4 , LOG_LOCAL5 ,
@@ -201,8 +205,6 @@ static int int_fac[]={LOG_AUTH ,  LOG_CRON , LOG_DAEMON ,
 		    LOG_NEWS , LOG_USER , LOG_UUCP,
 		    LOG_AUTHPRIV,LOG_FTP,LOG_SYSLOG,
 		    0};
-
-static int syslog_facility = 0;
 
 static int str_to_syslog_facility(char *s)
 {
@@ -214,17 +216,22 @@ static int str_to_syslog_facility(char *s)
 	return -1;
 }
 
+#endif // #if !defined(WIN32)
+
 void set_syslog_facility(char *val)
 {
 	if(val == NULL){
 		return;
 	}
+#if defined(__unix__) || defined(unix) || defined(__APPLE__) \
+		|| defined(__DARWIN__) || defined(__MACH__)
 	int tmp = str_to_syslog_facility(val);
 	if(tmp == -1){
 		TURN_LOG_FUNC(TURN_LOG_LEVEL_WARNING, "WARNING: invalid syslog-facility value (%s); ignored.\n", val);
 		return;
 	}
 	syslog_facility = tmp;
+#endif
 }
 
 #if defined(TURN_LOG_FUNC_IMPL)
@@ -629,7 +636,15 @@ void turn_log_func_default(char* file, int line, TURN_LOG_LEVEL level, const cha
 		fwrite(s, so_far, 1, stdout);
 	/* write to syslog or to log file */
 	if(to_syslog) {
-		syslog(syslog_facility|get_syslog_level(level),"%s",s);
+		
+#if defined(MSVC)
+		//TODO: https://docs.microsoft.com/en-us/windows/win32/etw/about-event-tracing
+		// windows10: https://docs.microsoft.com/en-us/windows/win32/tracelogging/trace-logging-portal
+		printf("%s", s);
+#else
+        syslog(syslog_facility | get_syslog_level(level), "%s", s);
+#endif
+
 	} else {
 		log_lock();
 		set_rtpfile();
