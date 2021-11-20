@@ -28,13 +28,16 @@
  * SUCH DAMAGE.
  */
 
-#include <err.h>
+#if defined(__unix__)
+#include <unistd.h>
+#endif
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
 #include <getopt.h>
-#include <unistd.h>
+
 #include <stddef.h>
 
 #include "ns_turn_utils.h"

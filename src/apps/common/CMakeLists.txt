@@ -20,6 +20,7 @@ if(MSVC)
     list(APPEND COMMON_INCLUDE_DIR $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/apps/common/win>)
     list(APPEND SOURCE_FILES win/getopt.c)
     list(APPEND HEADER_FILES win/getopt.h)
+    list(APPEND COMMON_LIBS Ws2_32.lib)
 endif()
 
 find_package(OpenSSL REQUIRED)
