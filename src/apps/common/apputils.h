@@ -210,6 +210,10 @@ int get_socket_mtu(evutil_socket_t fd, int family, int verbose);
 
 char *skip_blanks(char* s);
 
+#if defined(MSVC)
+    char* dirname(char* path);
+#endif
+
 ////////////////// File search ////////////////////////
 
 char* find_config_file(const char *config_file, int print_file_name);
