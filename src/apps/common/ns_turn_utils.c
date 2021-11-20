@@ -534,6 +534,14 @@ static int get_syslog_level(TURN_LOG_LEVEL level)
 	return level;
 }
 
+void err(int eval, const char *format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    TURN_LOG_FUNC(eval, format, args);
+    va_end(args);
+}
+
 void turn_log_func_default(TURN_LOG_LEVEL level, const char* format, ...)
 {
 	va_list args;

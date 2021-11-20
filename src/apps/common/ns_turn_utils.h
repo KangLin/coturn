@@ -36,6 +36,12 @@
 #define TURN_LOG_FUNC turn_log_func_default
 #endif
 
+#if defined(MSVC)
+    #ifndef err
+        void err(int eval, const char *format, ...);
+    #endif
+#endif
+
 #include "ns_turn_ioaddr.h"
 
 #ifdef __cplusplus
