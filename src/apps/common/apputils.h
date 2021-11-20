@@ -212,6 +212,7 @@ char *skip_blanks(char* s);
 
 #if defined(MSVC)
     char* dirname(char* path);
+    int gettimeofday(struct timeval *tp, void *tzp);
 #endif
 
 ////////////////// File search ////////////////////////
