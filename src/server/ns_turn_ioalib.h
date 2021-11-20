@@ -54,6 +54,15 @@ typedef struct _tcp_connection tcp_connection;
 	#ifndef getpid
 		#define getpid GetCurrentThreadId
 	#endif
+
+	#ifndef sleep
+        #define sleep(t) Sleep(t * 1000)
+	#endif
+
+    #ifndef usleep
+        #define usleep Sleep
+    #endif
+
 #endif
 
 ////////////// Mutexes /////////////////////
