@@ -28,7 +28,6 @@
  * SUCH DAMAGE.
  */
 
-#include <err.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -37,6 +36,7 @@
 #if defined(MSVC)
 #include <getopt.h>
 #else
+#include <err.h>
 #include <unistd.h>
 #endif
 

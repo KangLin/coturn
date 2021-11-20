@@ -28,7 +28,6 @@
 * SUCH DAMAGE.
 */
 
-#include <err.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -37,6 +36,7 @@
 #include <getopt.h>
 #else
 #include <unistd.h>
+#include <err.h>
 #endif
 
 #include "ns_turn_utils.h"
