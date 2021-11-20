@@ -754,6 +754,55 @@ char *skip_blanks(char* s)
 	return s;
 }
 
+#if defined(MSVC)
+
+char* dirname(char* path)
+{
+    char drive[_MAX_DRIVE];
+    char dir[_MAX_DIR];
+
+    errno_t err = _splitpath_s(path,
+		drive, _MAX_DRIVE,
+        dir, _MAX_DIR,
+        NULL, 0,
+        NULL, 0);
+    if (err)
+    {
+        TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "split path fail: %d", err);
+        return NULL;
+    }
+
+    int n = strlen(drive) + strlen(dir);
+    if(n > 0)
+        path[n] = 0;
+    else
+        return NULL;
+    return path;
+}
+
+int gettimeofday(struct timeval *tp, void *tzp)
+{
+    time_t clock;
+    struct tm tm;
+    SYSTEMTIME wtm;
+
+    GetLocalTime(&wtm);
+    tm.tm_year = wtm.wYear - 1900;
+    tm.tm_mon = wtm.wMonth - 1;
+    tm.tm_mday = wtm.wDay;
+    tm.tm_hour = wtm.wHour;
+    tm.tm_min = wtm.wMinute;
+    tm.tm_sec = wtm.wSecond;
+    tm.tm_isdst = -1;
+    clock = mktime(&tm);
+    tp->tv_sec = clock;
+    tp->tv_usec = wtm.wMilliseconds * 1000;
+
+    return (0);
+}
+
+#endif
+
 //////////////////// Config file search //////////////////////
 
 #define Q(x) #x
@@ -770,34 +819,6 @@ char *skip_blanks(char* s)
 
 static const char *config_file_search_dirs[] = {"./", "./turnserver/", "./coturn/", "./etc/", "./etc/turnserver/", "./etc/coturn/", "../etc/", "../etc/turnserver/", "../etc/coturn/", "/etc/", "/etc/turnserver/", "/etc/coturn/", "/usr/local/etc/", "/usr/local/etc/turnserver/", "/usr/local/etc/coturn/", QETCDIR, QETCDIR1, QETCDIR2, NULL };
 static char *c_execdir=NULL;
-
-#if defined(MSVC)
-
-char* dirname(char* path)
-{
-    char drive[_MAX_DRIVE];
-    char dir[_MAX_DIR];
-
-    errno_t err = _splitpath_s(path,
-		drive, _MAX_DRIVE,
-        dir, _MAX_DIR,
-        NULL, 0,
-        NULL, 0);
-    if(err)
-    {
-        TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "split path fail: %d", err);
-        return NULL;
-    }
-
-    int n = strlen(drive) + strlen(dir);
-    if(n > 0)
-        path[n] = 0;
-    else
-        return NULL;
-    return path;
-}
-
-#endif
 
 void set_execdir(void)
 {
