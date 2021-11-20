@@ -771,24 +771,63 @@ char *skip_blanks(char* s)
 static const char *config_file_search_dirs[] = {"./", "./turnserver/", "./coturn/", "./etc/", "./etc/turnserver/", "./etc/coturn/", "../etc/", "../etc/turnserver/", "../etc/coturn/", "/etc/", "/etc/turnserver/", "/etc/coturn/", "/usr/local/etc/", "/usr/local/etc/turnserver/", "/usr/local/etc/coturn/", QETCDIR, QETCDIR1, QETCDIR2, NULL };
 static char *c_execdir=NULL;
 
+#if defined(MSVC)
+
+char* dirname(char* path)
+{
+    char drive[_MAX_DRIVE];
+    char dir[_MAX_DIR];
+
+    errno_t err = _splitpath_s(path,
+		drive, _MAX_DRIVE,
+        dir, _MAX_DIR,
+        NULL, 0,
+        NULL, 0);
+    if(err)
+    {
+        TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "split path fail: %d", err);
+        return NULL;
+    }
+
+    int n = strlen(drive) + strlen(dir);
+    if(n > 0)
+        path[n] = 0;
+    else
+        return NULL;
+    return path;
+}
+
+#endif
+
 void set_execdir(void)
 {
-  /* On some systems, this may give us the execution path */
-  char *_var = getenv("_");
-  if(_var && *_var) {
-    _var = strdup(_var);
-    char *edir=_var;
-    if(edir[0]!='.') 
-      edir = strstr(edir,"/");
-    if(edir && *edir)
-      edir = dirname(edir);
-    else
-      edir = dirname(_var);
-    if(c_execdir)
-      free(c_execdir);
-    c_execdir = strdup(edir);
-    free(_var);
-  }
+	/* On some systems, this may give us the execution path */
+	char *_var = NULL;
+#if defined(MSVC)
+	char szPath[MAX_PATH];
+	if (!GetModuleFileNameA(NULL, szPath, MAX_PATH))
+	{
+		TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "GetModuleFileName failed(%d)\n", GetLastError());
+		return;
+	}
+	_var = szPath;
+#elif defined(__unix__)
+	_var = getenv("_");
+#endif
+	if (_var && *_var) {
+		_var = strdup(_var);
+		char *edir = _var;
+		if (edir[0] != '.')
+			edir = strstr(edir, "/");
+		if (edir && *edir)
+			edir = dirname(edir);
+		else
+			edir = dirname(_var);
+		if (c_execdir)
+			free(c_execdir);
+		c_execdir = strdup(edir);
+		free(_var);
+	}
 }
 
 void print_abs_file_name(const char *msg1, const char *msg2, const char *fn) 
