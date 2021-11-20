@@ -49,6 +49,12 @@ typedef struct _ts_ur_super_session ts_ur_super_session;
 struct _tcp_connection;
 typedef struct _tcp_connection tcp_connection;
 
+////////// THREAD /////////////
+#if defined(MSVC)
+
+    #define GetThreadId GetCurrentThreadId
+
+#endif
 
 ////////////// Mutexes /////////////////////
 

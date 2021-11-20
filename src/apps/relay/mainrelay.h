@@ -48,7 +48,6 @@
 #include <sys/stat.h>
 
 #include <getopt.h>
-#include <unistd.h>
 #include <ifaddrs.h>
 #include <libgen.h>
 #include <sys/time.h>
