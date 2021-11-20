@@ -558,7 +558,14 @@ void turn_log_func_default(TURN_LOG_LEVEL level, const char* format, ...)
 		fwrite(s, so_far, 1, stdout);
 	/* write to syslog or to log file */
 	if(to_syslog) {
+		
+#if defined(MSVC)
+		//TODO: https://docs.microsoft.com/en-us/windows/win32/etw/about-event-tracing
+		// windows10: https://docs.microsoft.com/en-us/windows/win32/tracelogging/trace-logging-portal
+		printf("%s", s);
+#else
 		syslog(get_syslog_level(level),"%s",s);
+#endif
 	} else {
 		log_lock();
 		set_rtpfile();
