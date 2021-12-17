@@ -213,7 +213,7 @@ typedef struct _turn_params_ {
   int no_dtls;
 
   struct event *tls_ctx_update_ev;
-  TURN_MUTEX_DECLARE(tls_mutex);
+  TURN_MUTEX_DECLARE(tls_mutex)
 
 //////////////// Common params ////////////////////
 

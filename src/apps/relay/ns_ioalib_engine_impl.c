@@ -3884,7 +3884,7 @@ const char* get_ioa_socket_tls_method(ioa_socket_handle s)
 #define TURN_SM_SIZE (1024<<11)
 
 struct _super_memory {
-	TURN_MUTEX_DECLARE(mutex_sm);
+	TURN_MUTEX_DECLARE(mutex_sm)
 	char **super_memory;
 	size_t *sm_allocated;
 	size_t sm_total_sz;
