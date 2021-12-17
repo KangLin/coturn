@@ -34,10 +34,8 @@
 #include <time.h>
 #include <unistd.h>
 #include <limits.h>
-#include <ifaddrs.h>
 #include <getopt.h>
 #include <locale.h>
-#include <libgen.h>
 
 #if !defined(TURN_NO_RWLOCK)
 #include <pthread.h>
@@ -46,9 +44,7 @@
 #include <signal.h>
 
 #include <sys/types.h>
-#include <sys/time.h>
 #include <sys/stat.h>
-#include <sys/resource.h>
 
 #include <event2/bufferevent.h>
 #include <event2/buffer.h>
