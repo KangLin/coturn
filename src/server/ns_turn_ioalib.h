@@ -62,6 +62,11 @@ typedef struct _tcp_connection tcp_connection;
         #define usleep Sleep
     #endif
 
+    #if defined(_MSC_VER)
+        #include <BaseTsd.h>
+        typedef SSIZE_T ssize_t;
+    #endif
+
 #endif
 
 ////////////// Mutexes /////////////////////
