@@ -36,9 +36,10 @@
 
 #include <time.h>
 
+#include <pthread.h>
+
 #if defined(__unix__) || defined(unix) || defined(__APPLE__) \
     || defined(__DARWIN__) || defined(__MACH__)
-	#include <pthread.h>
 	#include <syslog.h>
 #endif
 
@@ -75,13 +76,7 @@ static inline turn_time_t log_time(void)
 int turn_mutex_lock(const turn_mutex *mutex) {
   if(mutex && mutex->mutex && (mutex->data == MAGIC_CODE)) {
     int ret = 0;
-
-#if defined(MSVC)
-	ret = WaitForSingleObject(mutex->mutex, INFINITE);
-#else
     ret = pthread_mutex_lock((pthread_mutex_t*)mutex->mutex);
-#endif
-
     if(ret<0) {
       perror("Mutex lock");
     }
@@ -95,14 +90,7 @@ int turn_mutex_lock(const turn_mutex *mutex) {
 int turn_mutex_unlock(const turn_mutex *mutex) {
   if(mutex && mutex->mutex && (mutex->data == MAGIC_CODE)) {
     int ret = 0;
-
-#if defined(MSVC)
-	if (!ReleaseMutex(mutex->mutex))
-		ret = -1;
-#else
     ret = pthread_mutex_unlock((pthread_mutex_t*)mutex->mutex);
-#endif
-
     if(ret<0) {
       perror("Mutex unlock");
     }
@@ -116,14 +104,8 @@ int turn_mutex_unlock(const turn_mutex *mutex) {
 int turn_mutex_init(turn_mutex* mutex) {
   if(mutex) {
     mutex->data=MAGIC_CODE;
-
-#if defined(MSVC)
-	mutex->mutex = CreateMutex(NULL, FALSE, NULL);
-#else
     mutex->mutex=malloc(sizeof(pthread_mutex_t));
 	pthread_mutex_init((pthread_mutex_t*)mutex->mutex, NULL);
-#endif
-
     return 0;
   } else {
     return -1;
@@ -133,21 +115,19 @@ int turn_mutex_init(turn_mutex* mutex) {
 int turn_mutex_init_recursive(turn_mutex* mutex) {
 	int ret = -1;
 	if (mutex) {
-
-#if defined(MSVC)
-		ret = turn_mutex_init(mutex);
-#else
 		pthread_mutexattr_t attr;
 		if (pthread_mutexattr_init(&attr) < 0) {
 			perror("Cannot init mutex attr");
-		} else {
+		}
+		else {
 			if (pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE) < 0) {
 				perror("Cannot set type on mutex attr");
-			} else {
+			}
+			else {
 				mutex->mutex = malloc(sizeof(pthread_mutex_t));
 				mutex->data = MAGIC_CODE;
-				if ((ret = pthread_mutex_init((pthread_mutex_t*) mutex->mutex,
-						&attr)) < 0) {
+				if ((ret = pthread_mutex_init((pthread_mutex_t*)mutex->mutex,
+					&attr)) < 0) {
 					perror("Cannot init mutex");
 					mutex->data = 0;
 					free(mutex->mutex);
@@ -156,24 +136,15 @@ int turn_mutex_init_recursive(turn_mutex* mutex) {
 			}
 			pthread_mutexattr_destroy(&attr);
 		}
-#endif
-
 	}
-  return ret;
+	return ret;
 }
 
 int turn_mutex_destroy(turn_mutex* mutex) {
   if(mutex && mutex->mutex && mutex->data == MAGIC_CODE) {
     int ret = 0;
-
-#if defined(MSVC)
-	if (!CloseHandle(mutex->mutex))
-		ret = -1;
-#else
     ret = pthread_mutex_destroy((pthread_mutex_t*)(mutex->mutex));
 	free(mutex->mutex);
-#endif
-    
     mutex->mutex=NULL;
     mutex->data=0;
     return ret;
