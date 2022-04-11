@@ -32,13 +32,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-#include <unistd.h>
 #include <limits.h>
 #include <getopt.h>
 #include <locale.h>
 
-#if !defined(TURN_NO_RWLOCK)
-#include <pthread.h>
+#ifndef MSVC
+#include <unistd.h>
 #endif
 
 #include <signal.h>

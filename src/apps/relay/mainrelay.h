@@ -48,6 +48,9 @@
 #include <sys/stat.h>
 
 #include <getopt.h>
+
+#if defined(__unix__) || defined(unix) || defined(__APPLE__) \
+    || defined(__DARWIN__) || defined(__MACH__)
 #include <ifaddrs.h>
 #include <libgen.h>
 #include <sys/time.h>
@@ -56,6 +59,7 @@
 
 #include <pwd.h>
 #include <grp.h>
+#endif
 
 #include <event2/bufferevent.h>
 #include <event2/buffer.h>

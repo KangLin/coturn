@@ -971,7 +971,7 @@ static void listener_receive_message(struct bufferevent *bev, void *ptr)
 					    	  TURN_LOG_LEVEL_ERROR,
 					    	       "%s: Wrong general relay number: %d, total %d\n",
 					    	       __FUNCTION__,(int)ri,(int)get_real_general_relay_servers_number());
-				} else if(general_relay_servers[ri]->thr == pthread_self()) {
+				} else if(pthread_equal(general_relay_servers[ri]->thr, pthread_self())) {
 					relay_thread_index=ri;
 					break;
 				}
