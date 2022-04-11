@@ -56,6 +56,18 @@ IF(MSVC)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 ENDIF(MSVC)
 
+SET(BUILD_SHARED_LIBS OFF CACHE BOOL "Build shared libs")
+if (BUILD_SHARED_LIBS)
+    add_definitions(-DBUILD_SHARED_LIBS)
+    if (CMAKE_COMPILER_IS_GNUCXX AND NOT MINGW)
+       # Just setting CMAKE_POSITION_INDEPENDENT_CODE should be enough to set
+       # -fPIC for GCC but sometimes it still doesn't get set, so make sure it
+       # does.
+       add_definitions("-fPIC")
+    endif()
+    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+endif(BUILD_SHARED_LIBS)
+
 include(CMakePackageConfigHelpers)
 include(GNUInstallDirs)
 include(GenerateExportHeader)
@@ -86,6 +98,11 @@ ADD_CUSTOM_TARGET(uninstall
     )
 
 add_subdirectory(src)
+
+OPTION(BUILD_TEST "Build test" OFF)
+if(BUILD_TEST)
+    add_subdirectory(test)
+endif(BUILD_TEST)
 
 install(DIRECTORY man DESTINATION .
     COMPONENT Runtime)

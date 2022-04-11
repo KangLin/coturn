@@ -224,7 +224,10 @@ static void reload_ssl_certs(evutil_socket_t sock, short events, void *args);
 static int make_local_listeners_list(void)
 {
 	int ret = 0;
-
+#ifdef MSVC
+	//TODO: implement it
+	TURN_LOG_FUNC(TURN_LOG_LEVEL_WARNING, "Don't implement make_local_listeners_list in msvc");
+#else
 	struct ifaddrs * ifs = NULL;
 	struct ifaddrs * ifa = NULL;
 
@@ -267,20 +270,25 @@ static int make_local_listeners_list(void)
 		}
 		freeifaddrs(ifs);
 	}
+#endif
 
 	return ret;
 }
 
 static int make_local_relays_list(int allow_local, int family)
 {
+	int counter = 0;
+
+#ifdef MSVC
+	//TODO: implement it
+	TURN_LOG_FUNC(TURN_LOG_LEVEL_WARNING, "Don't implement make_local_relays_list in msvc");
+#else
 	struct ifaddrs * ifs = NULL;
 	struct ifaddrs * ifa = NULL;
 
 	char saddr[INET6_ADDRSTRLEN] = "";
 
 	getifaddrs(&ifs);
-
-	int counter = 0;
 
 	if (ifs) {
 		for (ifa = ifs; ifa != NULL; ifa = ifa->ifa_next) {
@@ -329,12 +337,17 @@ static int make_local_relays_list(int allow_local, int family)
 		}
 		freeifaddrs(ifs);
 	}
+#endif
 
 	return counter;
 }
 
 int get_a_local_relay(int family, ioa_addr *relay_addr)
 {
+#ifdef MSVC
+	//TODO: implement it
+	TURN_LOG_FUNC(TURN_LOG_LEVEL_WARNING, "Don't implement get_a_local_relay in msvc");
+#else
 	struct ifaddrs * ifs = NULL;
 
 	int allow_local = 0;
@@ -410,8 +423,8 @@ int get_a_local_relay(int family, ioa_addr *relay_addr)
 
 		freeifaddrs(ifs);
 	}
-
 	return -1;
+#endif
 }
 
 //////////////////////////////////////////////////
@@ -1107,6 +1120,7 @@ void encrypt_aes_128(unsigned  char* in, const unsigned char* mykey){
 	printf("%s\n",base64_encoded);
 
 }
+
 void generate_aes_128_key(char* filePath, unsigned char* returnedKey){
 	int i;
 	int part;

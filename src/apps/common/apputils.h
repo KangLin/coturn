@@ -213,6 +213,8 @@ char *skip_blanks(char* s);
 #if defined(MSVC)
     char* dirname(char* path);
     int gettimeofday(struct timeval *tp, void *tzp);
+#define CLOCK_REALTIME 0
+	int clock_gettime(int X, struct timeval* tv);
 #endif
 
 ////////////////// File search ////////////////////////
