@@ -1941,39 +1941,43 @@ static int socket_readerr(evutil_socket_t fd, ioa_addr *orig_addr)
 		return -1;
 
 #if defined(CMSG_SPACE) && defined(MSG_ERRQUEUE) && defined(IP_RECVERR)
+	#ifdef MSVC
+	    //TODO: implement it!!!
+	    TURN_LOG_FUNC(TURN_LOG_LEVEL_WARNING, "The socket_readerr is not implement in msvc");
+	#else
+		uint8_t ecmsg[TURN_CMSG_SZ+1];
+		int flags = MSG_ERRQUEUE;
+		int len = 0;
 
-	uint8_t ecmsg[TURN_CMSG_SZ+1];
-	int flags = MSG_ERRQUEUE;
-	int len = 0;
+		struct msghdr msg;
+		struct iovec iov;
+		char buffer[65536];
 
-	struct msghdr msg;
-	struct iovec iov;
-	char buffer[65536];
+		char *cmsg = (char*)ecmsg;
 
-	char *cmsg = (char*)ecmsg;
+		msg.msg_control = cmsg;
+		msg.msg_controllen = TURN_CMSG_SZ;
+		/* CMSG_SPACE(sizeof(recv_ttl)+sizeof(recv_tos)) */
 
-	msg.msg_control = cmsg;
-	msg.msg_controllen = TURN_CMSG_SZ;
-	/* CMSG_SPACE(sizeof(recv_ttl)+sizeof(recv_tos)) */
+		msg.msg_name = orig_addr;
+		msg.msg_namelen = (socklen_t)get_ioa_addr_len(orig_addr);
+		msg.msg_iov = &iov;
+		msg.msg_iovlen = 1;
+		msg.msg_iov->iov_base = buffer;
+		msg.msg_iov->iov_len = sizeof(buffer);
+		msg.msg_flags = 0;
 
-	msg.msg_name = orig_addr;
-	msg.msg_namelen = (socklen_t)get_ioa_addr_len(orig_addr);
-	msg.msg_iov = &iov;
-	msg.msg_iovlen = 1;
-	msg.msg_iov->iov_base = buffer;
-	msg.msg_iov->iov_len = sizeof(buffer);
-	msg.msg_flags = 0;
-
-	int try_cycle = 0;
-
-	do {
+		int try_cycle = 0;
 
 		do {
-			len = recvmsg(fd,&msg,flags);
-		} while (len < 0 && (errno == EINTR));
 
-	} while((len>0)&&(try_cycle++<MAX_ERRORS_IN_UDP_BATCH));
+			do {
+				len = recvmsg(fd,&msg,flags);
+			} while (len < 0 && (errno == EINTR));
 
+		} while((len>0)&&(try_cycle++<MAX_ERRORS_IN_UDP_BATCH));
+
+	#endif
 #endif
 
 	return 0;
@@ -1996,7 +2000,7 @@ int udp_recvfrom(evutil_socket_t fd, ioa_addr* orig_addr, const ioa_addr *like_a
 	recv_ttl_t recv_ttl = TTL_DEFAULT;
 	recv_tos_t recv_tos = TOS_DEFAULT;
 
-#if !defined(CMSG_SPACE)
+#if defined(MSVC) || !defined(CMSG_SPACE)
 	do {
 	  len = recvfrom(fd, buffer, buf_size, flags, (struct sockaddr*) orig_addr, (socklen_t*) &slen);
 	} while (len < 0 && (errno == EINTR));
