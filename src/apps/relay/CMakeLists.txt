@@ -7,6 +7,10 @@ if(NOT HAVE_THREAD_BARRIERS)
     list(APPEND turnserver_DEFINED TURN_NO_THREAD_BARRIERS)
 endif()
 
+if(MSVC)
+    list(APPEND turnserver_LIBS Iphlpapi)
+endif()
+
 set(HEADER_FILES
     tls_listener.h
     mainrelay.h
