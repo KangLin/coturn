@@ -52,7 +52,9 @@ typedef struct _tcp_connection tcp_connection;
 ////////// THREAD /////////////
 #if defined(MSVC)
 
-    #define GetThreadId GetCurrentThreadId
+#ifdef _MSC_VER
+#define strtok_r strtok_s
+#endif
 
 	#ifndef sleep
         #define sleep(t) Sleep(t * 1000)
