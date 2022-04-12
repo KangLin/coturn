@@ -2903,7 +2903,23 @@ int main(int argc, char **argv)
 	}
 
 #ifdef MSVC
-	//TODO: implement it!!!
+	
+    WORD wVersionRequested;
+    WSADATA wsaData;
+    int err;
+
+    /* Use the MAKEWORD(lowbyte, highbyte) macro declared in Windef.h */
+    wVersionRequested = MAKEWORD(2, 2);
+
+    err = WSAStartup(wVersionRequested, &wsaData);
+    if (err != 0) {
+        /* Tell the user that we could not find a usable */
+        /* Winsock DLL.                                  */
+        TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "ERROR: WSAStartup failed with error: %d\n", err);
+        return 1;
+    }
+
+    //TODO: implement deamon!!!
 #else
 	if(turn_params.turn_daemon) {
 #if !defined(TURN_HAS_DAEMON)
