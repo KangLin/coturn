@@ -1864,7 +1864,11 @@ static void setup_admin_server(void)
 
 void setup_server(void)
 {
+#ifdef MSVC
+	evthread_use_windows_threads();
+#else
 	evthread_use_pthreads();
+#endif
 
 	TURN_MUTEX_INIT(&mutex_bps);
     TURN_MUTEX_INIT(&auth_message_counter_mutex);
