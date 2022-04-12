@@ -206,13 +206,16 @@ static void openssl_setup(void);
 */
 
 //////////// Common static process params ////////
-
+#ifdef MSVC
+//TODO: implement it!!!
+#else
 static gid_t procgroupid = 0;
 static uid_t procuserid = 0;
 static gid_t procgroupid_set = 0;
 static uid_t procuserid_set = 0;
 static char procusername[1025]="\0";
 static char procgroupname[1025]="\0";
+#endif
 
 ////////////// Configuration functionality ////////////////////////////////
 
@@ -1337,6 +1340,9 @@ static void set_option(int c, char *value)
   case WEB_ADMIN_LISTEN_ON_WORKERS_OPT:
 	  turn_params.web_admin_listen_on_workers = get_bool_value(value);
 	  break;
+#ifdef MSVC
+	  //TODO: implement it!!!
+#else
   case PROC_USER_OPT: {
 	  struct passwd* pwd = getpwnam(value);
 	  if(!pwd) {
@@ -1361,6 +1367,7 @@ static void set_option(int c, char *value)
 		}
 	}
 	break;
+#endif
 	case 'i':
 		STRCPY(turn_params.relay_ifname, value);
 		break;
@@ -2240,6 +2247,9 @@ static void set_network_engine(void)
 
 static void drop_privileges(void)
 {
+#ifdef MSVC
+	//TODO: implement it!!!
+#else
 	setgroups(0, NULL);
 	if(procgroupid_set) {
 		if(getgid() != procgroupid) {
@@ -2266,11 +2276,12 @@ static void drop_privileges(void)
 			TURN_LOG_FUNC(TURN_LOG_LEVEL_INFO, "Keep UID: %s(%lu)\n", procusername, (unsigned long)procuserid);
 		}
 	}
+#endif
 }
 
 static void init_domain(void)
 {
-#if !defined(TURN_NO_GETDOMAINNAME)
+#if !defined(TURN_NO_GETDOMAINNAME) && !defined(MSVC)
 	if(getdomainname(turn_params.domain,sizeof(turn_params.domain)-1)<0) {
 		turn_params.domain[0]=0;
 	} else if(!strcmp(turn_params.domain,"(none)")) {
@@ -2564,6 +2575,9 @@ int main(int argc, char **argv)
 		}
 	}
 
+#ifdef MSVC
+	//TODO: implement it!!!
+#else
 	if(turn_params.turn_daemon) {
 #if !defined(TURN_HAS_DAEMON)
 		pid_t pid = fork();
@@ -2620,11 +2634,16 @@ int main(int argc, char **argv)
 			TURN_LOG_FUNC(TURN_LOG_LEVEL_INFO, "pid file created: %s\n", s);
 		}
 	}
+#endif
 
 	setup_server();
 
+#ifdef MSVC
+	//TODO: implement it!!!
+#else
 	struct event *ev = evsignal_new(turn_params.listener.event_base, SIGUSR2, reload_ssl_certs, NULL);
 	event_add(ev, NULL);
+#endif
 
 	drop_privileges();
 #if !defined(TURN_NO_PROMETHEUS)

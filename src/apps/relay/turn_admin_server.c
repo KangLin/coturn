@@ -673,8 +673,12 @@ static void cli_print_configuration(struct cli_session* cs)
 		cli_print_flag(cs,turn_params.mobility,"mobility",1);
 		cli_print_flag(cs,turn_params.udp_self_balance,"udp-self-balance",0);
 		cli_print_str(cs,turn_params.pidfile,"pidfile",0);
+#ifdef MSVC
+		//TODO: implement it!!!
+#else
 		cli_print_uint(cs,(unsigned long)getuid(),"process user ID",0);
 		cli_print_uint(cs,(unsigned long)getgid(),"process group ID",0);
+#endif
 
 		{
 			char wd[1025];
@@ -2072,9 +2076,12 @@ static void write_pc_page(ioa_socket_handle s)
 				https_print_flag(sb,turn_params.mobility,"mobility","mobility");
 				https_print_flag(sb,turn_params.udp_self_balance,"udp-self-balance",0);
 				https_print_str(sb,turn_params.pidfile,"pidfile",0);
+#ifdef MSVC
+				//TODO: implement it!!!
+#else
 				https_print_uint(sb,(unsigned long)getuid(),"process user ID",0);
 				https_print_uint(sb,(unsigned long)getgid(),"process group ID",0);
-
+#endif
 				{
 					char wd[1025];
 					if(getcwd(wd,sizeof(wd)-1)) {
