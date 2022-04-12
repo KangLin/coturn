@@ -1655,7 +1655,7 @@ static int get_bool_value(const char* s)
 static void set_option(int c, char *value)
 {
   if(value && value[0]=='=') {
-    TURN_LOG_FUNC(TURN_LOG_LEVEL_WARNING, "WARNING: option -%c is possibly used incorrectly. The short form of the option must be used as this: -%c <value>, no \'equals\' sign may be used, that sign is used only with long form options (like --user=<username>).\n",(char)c,(char)c);
+    TURN_LOG_FUNC(TURN_LOG_LEVEL_WARNING, "option -%c is possibly used incorrectly. The short form of the option must be used as this: -%c <value>, no \'equals\' sign may be used, that sign is used only with long form options (like --user=<username>).\n",(char)c,(char)c);
   }
 
   switch (c) {
@@ -1673,10 +1673,10 @@ static void set_option(int c, char *value)
 			} else if (!strcmp(value, "ipv4")) {
 				turn_params.allocation_default_address_family = ALLOCATION_DEFAULT_ADDRESS_FAMILY_IPV4;
 			} else {
-				TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "ERROR: invalid allocation_default_address_family parameter\n");
+				TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "invalid allocation_default_address_family parameter\n");
 			}
 		} else {
-			TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "ERROR: invalid allocation_default_address_family parameter\n");
+			TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "invalid allocation_default_address_family parameter\n");
 		}
 		break;
   case SERVER_NAME_OPT:
@@ -1684,7 +1684,7 @@ static void set_option(int c, char *value)
 	  break;
   case OAUTH_OPT:
 	  if( ENC_ALG_NUM == 0) {
-		  TURN_LOG_FUNC(TURN_LOG_LEVEL_WARNING, "WARNING: option --oauth is not supported; ignored.\n");
+		  TURN_LOG_FUNC(TURN_LOG_LEVEL_WARNING, "option --oauth is not supported; ignored.\n");
 	  } else {
 		  turn_params.oauth = get_bool_value(value);
 	  }
@@ -1708,7 +1708,7 @@ static void set_option(int c, char *value)
   {
 	  int ne = atoi(value);
 	  if((ne<(int)NEV_MIN)||(ne>(int)NEV_MAX)) {
-		  TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "ERROR: wrong version of the network engine: %d\n",ne);
+		  TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "wrong version of the network engine: %d\n",ne);
 	  }
 	  turn_params.net_engine_version = (NET_ENG_VERSION)ne;
   }
@@ -1799,7 +1799,7 @@ static void set_option(int c, char *value)
 	case 'm':
 #if defined(OPENSSL_THREADS)
 		if(atoi(value)>MAX_NUMBER_OF_GENERAL_RELAY_SERVERS) {
-			TURN_LOG_FUNC(TURN_LOG_LEVEL_WARNING, "WARNING: max number of relay threads is 128.\n");
+			TURN_LOG_FUNC(TURN_LOG_LEVEL_WARNING, "max number of relay threads is 128.\n");
 			turn_params.general_relay_servers_number = MAX_NUMBER_OF_GENERAL_RELAY_SERVERS;
 		} else if(atoi(value)<=0) {
 			turn_params.general_relay_servers_number = 0;
@@ -1807,7 +1807,7 @@ static void set_option(int c, char *value)
 			turn_params.general_relay_servers_number = atoi(value);
 		}
 #else
-		TURN_LOG_FUNC(TURN_LOG_LEVEL_WARNING, "WARNING: OpenSSL version is too old OR does not support threading,\n I am using single thread for relaying.\n");
+		TURN_LOG_FUNC(TURN_LOG_LEVEL_WARNING, "OpenSSL version is too old OR does not support threading,\n I am using single thread for relaying.\n");
 #endif
 		break;
 	case 'd':
@@ -1955,7 +1955,7 @@ static void set_option(int c, char *value)
 		break;
 	case 'b':
 #if defined(TURN_NO_SQLITE)
-	  TURN_LOG_FUNC(TURN_LOG_LEVEL_WARNING, "WARNING: Options -b, --userdb and --db are not supported because SQLite is not supported in this build.\n");
+	  TURN_LOG_FUNC(TURN_LOG_LEVEL_WARNING, "Options -b, --userdb and --db are not supported because SQLite is not supported in this build.\n");
 #else
 		STRCPY(turn_params.default_users_db.persistent_users_db.userdb, value);
 		turn_params.default_users_db.userdb_type = TURN_USERDB_TYPE_SQLITE;
@@ -2023,7 +2023,7 @@ static void set_option(int c, char *value)
 		use_lt_credentials = 1;
 		break;
 	case AUTH_SECRET_TS_EXP:
-		TURN_LOG_FUNC(TURN_LOG_LEVEL_WARNING, "WARNING: Option --secret-ts-exp-time deprecated and has no effect.\n");
+		TURN_LOG_FUNC(TURN_LOG_LEVEL_WARNING, "Option --secret-ts-exp-time deprecated and has no effect.\n");
 		break;
 	case 'r':
 		set_default_realm_name(value);
@@ -2292,7 +2292,7 @@ static void read_config_file(int argc, char **argv, int pass)
 			fclose(f);
 
 		} else
-			TURN_LOG_FUNC(TURN_LOG_LEVEL_WARNING, "WARNING: Cannot find config file: %s. Default and command-line settings will be used.\n",
+			TURN_LOG_FUNC(TURN_LOG_LEVEL_WARNING, "Cannot find config file: %s. Default and command-line settings will be used.\n",
 					config_file);
 
 		if (full_path_to_config_file) {
@@ -3013,7 +3013,7 @@ int main(int argc, char **argv)
     if (err != 0) {
         /* Tell the user that we could not find a usable */
         /* Winsock DLL.                                  */
-        TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "ERROR: WSAStartup failed with error: %d\n", err);
+        TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "WSAStartup failed with error: %d\n", err);
         return 1;
     }
 
@@ -3025,12 +3025,12 @@ int main(int argc, char **argv)
 		if(pid>0)
 			exit(0);
 		if(pid<0) {
-			TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "ERROR: Cannot start daemon process\n");
+			TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "Cannot start daemon process\n");
 			exit(-1);
 		}
 #else
 		if(daemon(1,0)<0) {
-			TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "ERROR: Cannot start daemon process\n");
+			TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "Cannot start daemon process\n");
 			exit(-1);
 		}
 		reset_rtpprintf();
@@ -3732,10 +3732,10 @@ static void openssl_load_certificates(void)
 
 	if(!turn_params.no_dtls) {
 #if !DTLS_SUPPORTED
-		TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "ERROR: DTLS is not supported.\n");
+		TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "DTLS is not supported.\n");
 #else
 		if(OPENSSL_VERSION_NUMBER < 0x10000000L) {
-			TURN_LOG_FUNC(TURN_LOG_LEVEL_WARNING, "WARNING: TURN Server was compiled with rather old OpenSSL version, DTLS may not be working correctly.\n");
+			TURN_LOG_FUNC(TURN_LOG_LEVEL_WARNING, "TURN Server was compiled with rather old OpenSSL version, DTLS may not be working correctly.\n");
 		}
 
 #if DTLSv1_2_SUPPORTED

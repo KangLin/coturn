@@ -1517,7 +1517,7 @@ void start_mclient(const char *remote_address, int port,
 			}
 			run_events(0);
 			if(current_time > connect_wait_start_time + STARTING_TCP_RELAY_TIME + total_clients) {
-				TURN_LOG_FUNC(TURN_LOG_LEVEL_WARNING, "WARNING: %d connections are completed, not enough\n",
+				TURN_LOG_FUNC(TURN_LOG_LEVEL_WARNING, "%d connections are completed, not enough\n",
 						(int)(completed));
 				break;
 			}
