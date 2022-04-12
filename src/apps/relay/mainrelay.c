@@ -305,23 +305,33 @@ static int make_local_listeners_list(void)
                 for (i = 0; pUnicast != NULL; pUnicast = pUnicast->Next)
                 {
                     char saddr[INET6_ADDRSTRLEN] = "";
-                    if (AF_INET == pUnicast->Address.lpSockaddr->sa_family) // IPV
-                        inet_ntop(PF_INET, &((struct sockaddr_in*)pUnicast->Address.lpSockaddr)->sin_addr, saddr, INET6_ADDRSTRLEN);
+                    if (AF_INET == pUnicast->Address.lpSockaddr->sa_family) // IPV4
+                    {
+                        if (!inet_ntop(PF_INET,
+                            &((struct sockaddr_in*)pUnicast->Address.lpSockaddr)->sin_addr,
+                            saddr, INET6_ADDRSTRLEN))
+                            continue;
+                        if (strstr(saddr, "169.254.") == saddr)
+                            continue;
+                        if (!strcmp(saddr, "0.0.0.0"))
+                            continue;
+                    }
                     else if (AF_INET6 == pUnicast->Address.lpSockaddr->sa_family) // IPV6
-                        inet_ntop(PF_INET6, &((struct sockaddr_in6*)pUnicast->Address.lpSockaddr)->sin6_addr, saddr, INET6_ADDRSTRLEN);
+                    {
+                        if (!inet_ntop(PF_INET6,
+                            &((struct sockaddr_in6*)pUnicast->Address.lpSockaddr)->sin6_addr,
+                            saddr, INET6_ADDRSTRLEN))
+                            continue;
+                        if (strstr(saddr, "fe80") == saddr)
+                            continue;
+                        if (!strcmp(saddr, "::"))
+                            continue;
+                    }
                     else
                         continue;
 
                     //printf("\t\tIP: %s\n", saddr);
-                    if (strstr(saddr, "169.254.") == saddr)
-                        continue;
-                    if (!strcmp(saddr, "0.0.0.0"))
-                        continue;
-                    if (strstr(saddr, "fe80") == saddr)
-                        continue;
-                    if (!strcmp(saddr, "::"))
-                        continue;
-
+                    
                     add_listener_addr(saddr);
 
                     if (MIB_IF_TYPE_LOOPBACK != pCurrAddresses->IfType)
@@ -503,8 +513,105 @@ static int make_local_relays_list(int allow_local, int family)
 	int counter = 0;
 
 #ifdef MSVC
-	//TODO: implement it
-	TURN_LOG_FUNC(TURN_LOG_LEVEL_WARNING, "Don't implement make_local_relays_list in msvc");
+    DWORD dwRetVal = 0;
+    // Set the flags to pass to GetAdaptersAddresses
+    ULONG flags = GAA_FLAG_INCLUDE_PREFIX;
+
+    // default to unspecified address family (both)
+    ULONG fm = AF_UNSPEC;
+
+    LPVOID lpMsgBuf = NULL;
+
+    PIP_ADAPTER_ADDRESSES pAddresses = NULL;
+    ULONG outBufLen = 0;
+    ULONG Iterations = 0;
+
+    PIP_ADAPTER_ADDRESSES pCurrAddresses = NULL;
+    PIP_ADAPTER_UNICAST_ADDRESS pUnicast = NULL;
+
+    // Allocate a 15 KB buffer to start with.
+    outBufLen = WORKING_BUFFER_SIZE;
+
+    do {
+
+        pAddresses = (IP_ADAPTER_ADDRESSES *)MALLOC(outBufLen);
+        if (pAddresses == NULL) {
+            TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR,
+                "Memory allocation failed for IP_ADAPTER_ADDRESSES struct\n");
+            return -1;
+        }
+
+        dwRetVal =
+            GetAdaptersAddresses(fm, flags, NULL, pAddresses, &outBufLen);
+
+        if (dwRetVal == ERROR_BUFFER_OVERFLOW) {
+            FREE(pAddresses);
+            pAddresses = NULL;
+        }
+        else {
+            break;
+        }
+
+        Iterations++;
+
+    } while ((dwRetVal == ERROR_BUFFER_OVERFLOW) && (Iterations < MAX_TRIES));
+
+    if (dwRetVal == NO_ERROR) {
+        // If successful, output some information from the data we received
+        pCurrAddresses = pAddresses;
+        while (pCurrAddresses) {
+            /*
+            printf("\tLength of the IP_ADAPTER_ADDRESS struct: %ld\n",
+                pCurrAddresses->Length);
+            printf("\tIfIndex (IPv4 interface): %u\n", pCurrAddresses->IfIndex);
+            printf("\tAdapter name: %s\n", pCurrAddresses->AdapterName);//*/
+
+            pUnicast = pCurrAddresses->FirstUnicastAddress;
+            if (pUnicast != NULL) {
+                //printf("\tNumber of Unicast Addresses:\n");
+                for (; pUnicast != NULL; pUnicast = pUnicast->Next) {
+                    if (!allow_local && (MIB_IF_TYPE_LOOPBACK == pCurrAddresses->IfType))
+                        continue;
+
+                    char saddr[INET6_ADDRSTRLEN] = "";
+                    if (AF_INET == pUnicast->Address.lpSockaddr->sa_family) // IPV4
+                    {
+                        if (family != AF_INET)
+                            continue;
+                        if (!inet_ntop(PF_INET, &((struct sockaddr_in*)pUnicast->Address.lpSockaddr)->sin_addr, saddr, INET6_ADDRSTRLEN))
+                            continue;
+                        if (strstr(saddr, "169.254.") == saddr)
+                            continue;
+                        if (!strcmp(saddr, "0.0.0.0"))
+                            continue;
+                    }
+                    else if (AF_INET6 == pUnicast->Address.lpSockaddr->sa_family) // IPV6
+                    {
+                        if (family != AF_INET6)
+                            continue;
+
+                        if (!inet_ntop(PF_INET6, &((struct sockaddr_in6*)pUnicast->Address.lpSockaddr)->sin6_addr, saddr, INET6_ADDRSTRLEN))
+                            continue;
+                        if (strstr(saddr, "fe80") == saddr)
+                            continue;
+                        if (!strcmp(saddr, "::"))
+                            continue;
+                    }
+                    else
+                        continue;
+
+                    if (add_relay_addr(saddr) > 0) {
+                        counter += 1;
+                    }
+                }
+            }
+            pCurrAddresses = pCurrAddresses->Next;
+        }
+    }
+
+    if (pAddresses) {
+        FREE(pAddresses);
+    }
 #else
 	struct ifaddrs * ifs = NULL;
 	struct ifaddrs * ifa = NULL;
