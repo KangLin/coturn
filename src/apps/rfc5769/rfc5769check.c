@@ -36,7 +36,6 @@
 #if defined(_MSC_VER)
 #include <getopt.h>
 #else
-#include <err.h>
 #include <unistd.h>
 #endif
 

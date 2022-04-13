@@ -89,9 +89,12 @@ include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(Libevent
     REQUIRED_VARS Libevent_LIBRARY Libevent_INCLUDE_DIR)
 
-mark_as_advanced(Libevent_FOUND Libevent_INCLUDE_DIR Libevent_LIBRARY Libevent_lib)
+mark_as_advanced(Libevent_FOUND Libevent_INCLUDE_DIR Libevent_LIBRARY Libevent_INCLUDE_DIRS Libevent_LIBRARIES)
 
-set(Libevent_INCLUDE_DIRS ${Libevent_INCLUDE_DIR})
-set(Libevent_LIBRARIES ${Libevent_LIBRARY})
+if(Libevent_FOUND)
+	set(Libevent_INCLUDE_DIRS ${Libevent_INCLUDE_DIR})
+	set(Libevent_LIBRARYS ${Libevent_LIBRARY})
+endif()
+
 unset(Libevent_INCLUDE_DIR)
 unset(Libevent_LIBRARY)

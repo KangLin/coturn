@@ -91,7 +91,7 @@ void read_spare_buffer(evutil_socket_t fd)
 {
 	if(fd >= 0) {
 		static char buffer[65536];
-#if defined(_MSC_VER)
+#if defined(WINDOWS)
         //TODO: add set no-block
 		recv(fd, buffer, sizeof(buffer), 0);
 #else
@@ -1045,7 +1045,7 @@ static uint64_t turn_getRandTime(void) {
 
 unsigned long set_system_parameters(int max_resources)
 {
-#if defined(_MSC_VER)
+#if defined(WINDOWS)
 	srand((unsigned int)(turn_getRandTime() + (unsigned int)((long)(&turn_getRandTime))));
 #else
 	srandom((unsigned int) (turn_getRandTime() + (unsigned int)((long)(&turn_getRandTime))));

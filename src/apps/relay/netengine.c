@@ -1864,7 +1864,7 @@ static void setup_admin_server(void)
 
 void setup_server(void)
 {
-#ifdef _MSC_VER
+#if defined(WINDOWS)
 	evthread_use_windows_threads();
 #else
 	evthread_use_pthreads();

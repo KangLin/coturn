@@ -32,7 +32,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-#if defined(_MSC_VER)
+#if defined(WINDOWS)
 #include <getopt.h>
 #else
 #include <unistd.h>

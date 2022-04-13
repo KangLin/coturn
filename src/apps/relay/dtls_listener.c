@@ -41,7 +41,7 @@
 /* #define REQUEST_CLIENT_CERT */
 
 ///////////////////////////////////////////////////
-#ifdef _MSC_VER
+#if defined(WINDOWS)
     //TODO: test it!
     /* Type to represent a port.  */
     typedef uint16_t in_port_t;
@@ -656,7 +656,7 @@ static void udp_server_input_handler(evutil_socket_t fd, short what, void* arg)
 	addr_set_any(&(server->sm.m.sm.nd.src_addr));
 
 	ssize_t bsize = 0;
-#ifdef _MSC_VER
+#if defined(WINDOWS)
 	//TODO: implement it!!!
 	int flags = 0;
 #else
@@ -681,7 +681,7 @@ static void udp_server_input_handler(evutil_socket_t fd, short what, void* arg)
 
 	#if defined(MSG_ERRQUEUE)
 
-#ifdef _MSC_VER
+#if defined(WINDOWS)
 		//TODO: implement it!!!
 		int eflags = MSG_ERRQUEUE;
 #else

@@ -35,7 +35,7 @@
 #define TURN_LOG_FUNC(level, ...) turn_log_func_default(__FILE__, __LINE__, level, __VA_ARGS__)
 #endif
 
-#if defined(_MSC_VER)
+#if defined(WINDOWS)
     #ifndef err
         void err(int eval, const char *format, ...);
     #endif

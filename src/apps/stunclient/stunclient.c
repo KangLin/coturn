@@ -33,10 +33,12 @@
 #include <string.h>
 #include <time.h>
 #if defined(_MSC_VER)
-#include <getopt.h>
+    #include <getopt.h>
 #else
-#include <unistd.h>
-#include <err.h>
+    #include <unistd.h>
+    #if !defined(WINDOWS)
+        #include <err.h>
+    #endif
 #endif
 
 #include "ns_turn_utils.h"

@@ -7,7 +7,7 @@ if(NOT HAVE_THREAD_BARRIERS)
     list(APPEND turnserver_DEFINED TURN_NO_THREAD_BARRIERS)
 endif()
 
-if(MSVC)
+if(MSVC OR MINGW)
     list(APPEND turnserver_LIBS Iphlpapi)
 endif()
 

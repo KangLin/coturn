@@ -35,7 +35,7 @@
 #include "prom_server.h"
 #endif
 
-#ifdef _MSC_VER
+#if defined(WINDOWS)
     #include <Iphlpapi.h>
 
     #define WORKING_BUFFER_SIZE 15000
@@ -215,7 +215,7 @@ static void openssl_setup(void);
 */
 
 //////////// Common static process params ////////
-#ifdef _MSC_VER
+#if defined(WINDOWS)
 //TODO: implement it!!!
 #else
 static gid_t procgroupid = 0;
@@ -236,7 +236,7 @@ static void reload_ssl_certs(evutil_socket_t sock, short events, void *args);
 static int make_local_listeners_list(void)
 {
 	int ret = 0;
-#ifdef _MSC_VER
+#if defined(WINDOWS)
 
     DWORD dwSize = 0;
     DWORD dwRetVal = 0;
@@ -512,7 +512,7 @@ static int make_local_relays_list(int allow_local, int family)
 {
 	int counter = 0;
 
-#ifdef _MSC_VER
+#if defined(WINDOWS)
     DWORD dwRetVal = 0;
     // Set the flags to pass to GetAdaptersAddresses
     ULONG flags = GAA_FLAG_INCLUDE_PREFIX;
@@ -677,7 +677,7 @@ int get_a_local_relay(int family, ioa_addr *relay_addr)
     int ret = -1;
     int allow_local = 0;
 
-#ifdef _MSC_VER
+#if defined(WINDOWS)
     DWORD dwRetVal = 0;
     // Set the flags to pass to GetAdaptersAddresses
     ULONG flags = GAA_FLAG_INCLUDE_PREFIX;
@@ -1765,7 +1765,7 @@ static void set_option(int c, char *value)
   case WEB_ADMIN_LISTEN_ON_WORKERS_OPT:
 	  turn_params.web_admin_listen_on_workers = get_bool_value(value);
 	  break;
-#ifdef _MSC_VER
+#if defined(WINDOWS)
 	  //TODO: implement it!!!
 #else
   case PROC_USER_OPT: {
@@ -2672,7 +2672,7 @@ static void set_network_engine(void)
 
 static void drop_privileges(void)
 {
-#ifdef _MSC_VER
+#if defined(WINDOWS)
 	//TODO: implement it!!!
 #else
 	setgroups(0, NULL);
@@ -2706,7 +2706,8 @@ static void drop_privileges(void)
 
 static void init_domain(void)
 {
-#if !defined(TURN_NO_GETDOMAINNAME) && !defined(_MSC_VER)
+	//TODO: modify in windows
+#if !defined(TURN_NO_GETDOMAINNAME) && !defined(WINDOWS)
 	if(getdomainname(turn_params.domain,sizeof(turn_params.domain)-1)<0) {
 		turn_params.domain[0]=0;
 	} else if(!strcmp(turn_params.domain,"(none)")) {
@@ -3000,7 +3001,7 @@ int main(int argc, char **argv)
 		}
 	}
 
-#ifdef _MSC_VER
+#if defined(WINDOWS)
 	
     WORD wVersionRequested;
     WSADATA wsaData;
@@ -3017,7 +3018,7 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    //TODO: implement deamon!!!
+    //TODO: implement deamon!!! use windows server
 #else
 	if(turn_params.turn_daemon) {
 #if !defined(TURN_HAS_DAEMON)
@@ -3079,8 +3080,8 @@ int main(int argc, char **argv)
 
 	setup_server();
 
-#ifdef _MSC_VER
-	//TODO: implement it!!!
+#if defined(WINDOWS)
+	//TODO: implement it!!! add windows server
 #else
 	struct event *ev = evsignal_new(turn_params.listener.event_base, SIGUSR2, reload_ssl_certs, NULL);
 	event_add(ev, NULL);
