@@ -50,13 +50,12 @@ struct _tcp_connection;
 typedef struct _tcp_connection tcp_connection;
 
 ////////// THREAD /////////////
-#if defined(MSVC)
+#if defined(_MSC_VER)
+    #ifndef strtok_r
+        #define strtok_r strtok_s
+    #endif
 
-#ifdef _MSC_VER
-#define strtok_r strtok_s
-#endif
-
-	#ifndef sleep
+    #ifndef sleep
         #define sleep(t) Sleep(t * 1000)
 	#endif
 
@@ -64,11 +63,11 @@ typedef struct _tcp_connection tcp_connection;
         #define usleep Sleep
     #endif
 
-    #if defined(_MSC_VER)
+    #ifndef SSIZE_T
         #include <BaseTsd.h>
         typedef SSIZE_T ssize_t;
     #endif
-
+    
 #endif
 
 ////////////// Mutexes /////////////////////

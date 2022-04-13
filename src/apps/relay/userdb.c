@@ -36,7 +36,7 @@
 #include <getopt.h>
 #include <locale.h>
 
-#ifndef MSVC
+#ifndef _MSC_VER
 #include <unistd.h>
 #endif
 

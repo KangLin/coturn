@@ -40,7 +40,7 @@
 #include <string.h>
 #include <time.h>
 
-#if defined(MSVC)
+#if defined(_MSC_VER)
 #include <getopt.h>
 #else
 #include <unistd.h>

@@ -210,7 +210,7 @@ int get_socket_mtu(evutil_socket_t fd, int family, int verbose);
 
 char *skip_blanks(char* s);
 
-#if defined(MSVC)
+#if defined(_MSC_VER)
     char* dirname(char* path);
     int gettimeofday(struct timeval *tp, void *tzp);
 #define CLOCK_REALTIME 0

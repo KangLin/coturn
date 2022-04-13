@@ -97,7 +97,7 @@ long turn_random(void)
 {
 	long ret = 0;
 	if (!RAND_bytes((unsigned char*)&ret, sizeof(ret)))
-#if defined(MSVC)
+#if defined(_MSC_VER)
 		ret = rand();
 #else
 		ret = random();

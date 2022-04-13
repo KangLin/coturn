@@ -41,7 +41,8 @@
 /* #define REQUEST_CLIENT_CERT */
 
 ///////////////////////////////////////////////////
-#ifdef MSVC
+#ifdef _MSC_VER
+    //TODO: test it!
     /* Type to represent a port.  */
     typedef uint16_t in_port_t;
 #endif
@@ -398,7 +399,7 @@ static int handle_udp_packet(dtls_listener_relay_server_type *server,
 				uint8_t rsaddr[129];
 				addr_to_string(get_local_addr_from_ioa_socket(chs),saddr);
 				addr_to_string(get_remote_addr_from_ioa_socket(chs),rsaddr);
-#ifdef MSVC
+#ifdef _MSC_VER
 				//TODO: implement it!!!
 #else
 				long thrid = (long)pthread_self();
@@ -426,7 +427,7 @@ static int handle_udp_packet(dtls_listener_relay_server_type *server,
 
 				addr_to_string(get_local_addr_from_ioa_socket(chs),saddr);
 				addr_to_string(get_remote_addr_from_ioa_socket(chs),rsaddr);
-#ifdef MSVC
+#ifdef _MSC_VER
 				//TODO: implement it!!!
 #else
 				long thrid = (long)pthread_self();
@@ -655,7 +656,7 @@ static void udp_server_input_handler(evutil_socket_t fd, short what, void* arg)
 	addr_set_any(&(server->sm.m.sm.nd.src_addr));
 
 	ssize_t bsize = 0;
-#ifdef MSVC
+#ifdef _MSC_VER
 	//TODO: implement it!!!
 	int flags = 0;
 #else
@@ -680,7 +681,7 @@ static void udp_server_input_handler(evutil_socket_t fd, short what, void* arg)
 
 	#if defined(MSG_ERRQUEUE)
 
-#ifdef MSVC
+#ifdef _MSC_VER
 		//TODO: implement it!!!
 		int eflags = MSG_ERRQUEUE;
 #else

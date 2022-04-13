@@ -1941,9 +1941,9 @@ static int socket_readerr(evutil_socket_t fd, ioa_addr *orig_addr)
 		return -1;
 
 #if defined(CMSG_SPACE) && defined(MSG_ERRQUEUE) && defined(IP_RECVERR)
-	#ifdef MSVC
+	#ifdef _MSC_VER
 	    //TODO: implement it!!!
-	    TURN_LOG_FUNC(TURN_LOG_LEVEL_WARNING, "The socket_readerr is not implement in msvc");
+	    TURN_LOG_FUNC(TURN_LOG_LEVEL_WARNING, "The socket_readerr is not implement in _MSC_VER");
 	#else
 		uint8_t ecmsg[TURN_CMSG_SZ+1];
 		int flags = MSG_ERRQUEUE;
@@ -2000,7 +2000,7 @@ int udp_recvfrom(evutil_socket_t fd, ioa_addr* orig_addr, const ioa_addr *like_a
 	recv_ttl_t recv_ttl = TTL_DEFAULT;
 	recv_tos_t recv_tos = TOS_DEFAULT;
 
-#if defined(MSVC) || !defined(CMSG_SPACE)
+#if defined(_MSC_VER) || !defined(CMSG_SPACE)
 	do {
 	  len = recvfrom(fd, buffer, buf_size, flags, (struct sockaddr*) orig_addr, (socklen_t*) &slen);
 	} while (len < 0 && (errno == EINTR));

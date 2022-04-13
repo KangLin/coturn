@@ -608,7 +608,7 @@ void turn_log_func_default(char* file, int line, TURN_LOG_LEVEL level, const cha
 	/* write to syslog or to log file */
 	if(to_syslog) {
 		
-#if defined(MSVC)
+#if defined(_MSC_VER)
 		//TODO: https://docs.microsoft.com/en-us/windows/win32/etw/about-event-tracing
 		// windows10: https://docs.microsoft.com/en-us/windows/win32/tracelogging/trace-logging-portal
 		printf("%s", s);

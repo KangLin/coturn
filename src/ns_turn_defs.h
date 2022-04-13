@@ -43,7 +43,7 @@
 #define __APPLE_USE_RFC_3542
 #endif
 
-#if defined(MSVC)
+#if defined(_MSC_VER)
 #include <ws2tcpip.h>
 #include <Windows.h>
 #include <process.h>

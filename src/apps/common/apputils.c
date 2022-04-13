@@ -45,7 +45,7 @@
 #include <sys/resource.h>
 #endif
 
-#if defined(MSVC)
+#if defined(_MSC_VER)
 #include <direct.h>
 #else
 #include <unistd.h>
@@ -91,7 +91,7 @@ void read_spare_buffer(evutil_socket_t fd)
 {
 	if(fd >= 0) {
 		static char buffer[65536];
-#if defined(MSVC)
+#if defined(_MSC_VER)
         //TODO: add set no-block
 		recv(fd, buffer, sizeof(buffer), 0);
 #else
@@ -754,7 +754,7 @@ char *skip_blanks(char* s)
 	return s;
 }
 
-#if defined(MSVC)
+#if defined(_MSC_VER)
 
 char* dirname(char* path)
 {
@@ -883,7 +883,7 @@ void set_execdir(void)
 {
 	/* On some systems, this may give us the execution path */
 	char *_var = NULL;
-#if defined(MSVC)
+#if defined(_MSC_VER)
 	char szPath[MAX_PATH];
 	if (!GetModuleFileNameA(NULL, szPath, MAX_PATH))
 	{
@@ -1045,7 +1045,7 @@ static uint64_t turn_getRandTime(void) {
 
 unsigned long set_system_parameters(int max_resources)
 {
-#if defined(MSVC)
+#if defined(_MSC_VER)
 	srand((unsigned int)(turn_getRandTime() + (unsigned int)((long)(&turn_getRandTime))));
 #else
 	srandom((unsigned int) (turn_getRandTime() + (unsigned int)((long)(&turn_getRandTime))));
@@ -1223,3 +1223,4 @@ void convert_oauth_key_data_raw(const oauth_key_data_raw *raw, oauth_key_data *o
 }
 
 //////////////////////////////////////////////////////////////
+
