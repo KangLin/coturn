@@ -85,8 +85,7 @@ else()
 endif()
 
 find_package(libsystemd)
-if(libsystemd_FOUND)
-else()
+if(NOT libsystemd_FOUND)
     list(APPEND turnserver_DEFINED TURN_NO_SYSTEMD)
 endif()
 

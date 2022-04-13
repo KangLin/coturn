@@ -399,7 +399,7 @@ static int handle_udp_packet(dtls_listener_relay_server_type *server,
 				uint8_t rsaddr[129];
 				addr_to_string(get_local_addr_from_ioa_socket(chs),saddr);
 				addr_to_string(get_remote_addr_from_ioa_socket(chs),rsaddr);
-#ifdef _MSC_VER
+#ifdef WINDOWS
 				//TODO: implement it!!!
 #else
 				long thrid = (long)pthread_self();
@@ -427,7 +427,7 @@ static int handle_udp_packet(dtls_listener_relay_server_type *server,
 
 				addr_to_string(get_local_addr_from_ioa_socket(chs),saddr);
 				addr_to_string(get_remote_addr_from_ioa_socket(chs),rsaddr);
-#ifdef _MSC_VER
+#ifdef WINDOWS
 				//TODO: implement it!!!
 #else
 				long thrid = (long)pthread_self();
