@@ -1,4 +1,4 @@
-# Author: Kang Lin (kl222@126.com)
+# Author: Kang Lin <kl222@126.com>
 
 project(turnserver)
 
@@ -57,11 +57,16 @@ else()
     list(APPEND turnserver_DEFINED TURN_NO_PQ)
 endif()
 
-find_package(MySQL)
-if(MySQL_FOUND)
-    list(APPEND turnserver_LIBS MySQL::mysql)
-    list(APPEND SOURCE_FILES dbdrivers/dbd_mysql.c)
-    list(APPEND HEADER_FILES dbdrivers/dbd_mysql.h)
+option(WITH_MYSQL "Use mysql" ON)
+if(WITH_MYSQL)
+    find_package(MySQL)
+    if(MySQL_FOUND)
+       list(APPEND turnserver_LIBS MySQL::mysql)
+      list(APPEND SOURCE_FILES dbdrivers/dbd_mysql.c)
+      list(APPEND HEADER_FILES dbdrivers/dbd_mysql.h)
+    else()
+        list(APPEND turnserver_DEFINED TURN_NO_MYSQL)
+    endif()
 else()
     list(APPEND turnserver_DEFINED TURN_NO_MYSQL)
 endif()
@@ -102,18 +107,18 @@ target_link_libraries(${PROJECT_NAME} PRIVATE turn_server ${turnserver_LIBS})
 target_include_directories(${PROJECT_NAME} PRIVATE ${turnserver_include_dirs})
 target_compile_definitions(${PROJECT_NAME} PRIVATE ${turnserver_DEFINED})
 
-if(NOT WIN32)
-    add_custom_target(turnadmin ALL
-        COMMAND
-            ${CMAKE_COMMAND} -E create_symlink $<TARGET_FILE:${PROJECT_NAME}> $<TARGET_FILE_DIR:${PROJECT_NAME}>/turnadmin
-        DEPENDS ${PROJECT_NAME})
-endif()
-
 INSTALL(TARGETS ${PROJECT_NAME}
     RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
         COMPONENT Runtime
     )
 
-INSTALL(FILES $<TARGET_FILE_DIR:${PROJECT_NAME}>/turnadmin
-    DESTINATION "${CMAKE_INSTALL_BINDIR}"
+if(NOT WIN32)
+    add_custom_target(turnadmin ALL
+        COMMAND
+            ${CMAKE_COMMAND} -E create_symlink $<TARGET_FILE:${PROJECT_NAME}> $<TARGET_FILE_DIR:${PROJECT_NAME}>/turnadmin
+        DEPENDS ${PROJECT_NAME})
+
+    INSTALL(FILES $<TARGET_FILE_DIR:${PROJECT_NAME}>/turnadmin
+        DESTINATION "${CMAKE_INSTALL_BINDIR}"
             COMPONENT Runtime)
+endif()

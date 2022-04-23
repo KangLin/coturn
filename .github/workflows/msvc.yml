@@ -94,6 +94,7 @@ jobs:
         cd ${{github.workspace}}/build
         cmake ${{github.workspace}} ^
             -G "${{env.CMAKE_GENERATOR}}" ^
+            -DWITH_MYSQL=OFF ^
             -DCMAKE_GENERATOR_PLATFORM=${{matrix.CMAKE_GENERATOR_PLATFORM}} ^
             -DBUILD_SHARED_LIBS=${{matrix.BUILD_SHARED_LIBS}} ^
             -DCMAKE_BUILD_TYPE=${{matrix.BUILD_TYPE}} ^
