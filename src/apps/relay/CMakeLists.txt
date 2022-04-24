@@ -109,7 +109,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE ${turnserver_DEFINED})
 
 INSTALL(TARGETS ${PROJECT_NAME}
     RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
-        COMPONENT Runtime
+        COMPONENT Server
     )
 
 if(NOT WIN32)

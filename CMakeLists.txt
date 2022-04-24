@@ -80,15 +80,15 @@ include(CheckIncludeFileCXX)
 include(CheckFunctionExists)
 
 # Create install runtime target
-add_custom_target(install-runtime
+add_custom_target(install-libraries
   COMMAND
-     "${CMAKE_COMMAND}" -DCMAKE_INSTALL_COMPONENT=Runtime 
+     "${CMAKE_COMMAND}" -DCMAKE_INSTALL_COMPONENT=Libraries 
      -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_install.cmake"
 )
 # Create uninstall runtime target
-add_custom_target(uninstall-runtime
+add_custom_target(uninstall-libraries
   COMMAND
-     "${CMAKE_COMMAND}" -DCMAKE_INSTALL_COMPONENT=Runtime 
+     "${CMAKE_COMMAND}" -DCMAKE_INSTALL_COMPONENT=Libraries 
      -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
 )
 # Create will be delete files
@@ -131,8 +131,10 @@ install(FILES examples/etc/turnserver.conf
     RENAME turnserver.conf.default
     )
 install(DIRECTORY
-            examples/etc
-            examples/scripts
+        examples/etc
+        examples/scripts
     DESTINATION share/examples/turnserver
     PATTERN "rfc5769.sh" EXCLUDE
     )
+
+include(cmake/CMakeCPack.cmake)

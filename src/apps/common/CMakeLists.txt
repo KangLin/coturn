@@ -90,10 +90,12 @@ INSTALL(TARGETS ${PROJECT_NAME}
     LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
         COMPONENT Runtime
     ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        COMPONENT Development
     INCLUDES DESTINATION
         ${CMAKE_INSTALL_INCLUDEDIR}
         ${CMAKE_INSTALL_INCLUDEDIR}/turn
         ${CMAKE_INSTALL_INCLUDEDIR}/turn/client
+        COMPONENT Development
     )
 
 export(TARGETS ${PROJECT_NAME}
@@ -103,6 +105,7 @@ export(TARGETS ${PROJECT_NAME}
 # Install cmake configure files
 install(EXPORT ${PROJECT_NAME}Config
     DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake"
+    COMPONENT Development
     )
 # Install cmake version configure file
 if(DEFINED VERSION)
