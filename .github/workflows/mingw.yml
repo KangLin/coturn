@@ -23,8 +23,6 @@ jobs:
       SOURCE_DIR:  ${{github.workspace}}\.cache\source
       TOOSL_DIR:   ${{github.workspace}}\.cache\tools
       INSTALL_DIR: ${{github.workspace}}\.cache\install_mingw_2022_02_15
-      #TODO: modify version
-      COTURN_VERSION: v4.5.2
 
     steps:
     - uses: actions/checkout@v2
@@ -60,7 +58,7 @@ jobs:
       with:
         path: |
           ${{env.INSTALL_DIR}}
-        key: cache-installed-mingw
+        key: coturn-cache-installed-mingw
 
     - name: build coturn
       working-directory: ${{github.workspace}}
@@ -74,23 +72,30 @@ jobs:
             -DBUILD_SHARED_LIBS=${{matrix.BUILD_SHARED_LIBS}} ^
             -DCMAKE_BUILD_TYPE=${{matrix.BUILD_TYPE}} ^
             -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/build/install
-        cmake --build . --config ${{ matrix.BUILD_TYPE }}
-        cmake --build . --config ${{ matrix.BUILD_TYPE }} --target install
+        cmake --build . --config ${{matrix.BUILD_TYPE}}
+        cmake --build . --config ${{matrix.BUILD_TYPE}} --target install
 
     - name: Package
-      working-directory: ${{github.workspace}}/build
+      if: ${{ matrix.BUILD_TYPE == 'Release' }}
+      working-directory: ${{github.workspace}}\build
       run: |
         copy /Y ${{env.INSTALL_DIR}}\bin\*.dll install\bin
         copy /Y ${{env.INSTALL_DIR}}\lib\*.dll install\bin
         copy /Y ${{env.RUNVCPKG_VCPKG_ROOT}}\installed\${{env.RUNVCPKG_VCPKG_TRIPLET_OUT}}\bin\*.dll install\bin
-        7z a coturn_windows_mingw_${{env.COTURN_VERSION}}.zip .\install\*
-        cpack
-      if: ${{ matrix.BUILD_TYPE == 'Release' }}
+        7z a coturn_windows_mingw.zip ${{github.workspace}}\build\install\*
+        cmake --build . --config ${{matrix.BUILD_TYPE}} --target package
+      
+#    - name: Show fail information
+#      if: ${{ failure() }}
+#      run: |
+#        echo "Show fail information"
+#        type ${{github.workspace}}\build\_CPack_Packages\Windows-AMD64\NSIS\NSISOutput.log 
 
-#    - name: update 
-#      uses: actions/upload-artifact@v2
-#      with:
-#        name: coturn_${{ matrix.os }}
-#        path: |
-#          ${{github.workspace}}\build\coturn_windows_mingw_${{env.COTURN_VERSION}}.zip
-#      if: ${{ matrix.BUILD_TYPE == 'Release' }}
+    - name: update 
+      if: ${{ matrix.BUILD_TYPE == 'Release' }}
+      uses: actions/upload-artifact@v2
+      with:
+        name: coturn_mingw_${{ matrix.os }}
+        path: |
+          ${{github.workspace}}\build\coturn_windows_mingw.zip
+          ${{github.workspace}}\build\coturn-*.exe

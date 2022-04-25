@@ -78,11 +78,21 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     ${COMMON_INCLUDE_DIR}
     )
 
-# Install head files
 set_target_properties(${PROJECT_NAME} PROPERTIES
-	PUBLIC_HEADER "${HEADER_FILES}"
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/${PROJECT_NAME}
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/${PROJECT_NAME}
+    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
+    PUBLIC_HEADER "${HEADER_FILES}"  # Install head files
     VERSION ${VERSION}
     )
+
+#if(EXISTS ${CMAKE_BINARY_DIR}/bin/${PROJECT_NAME})
+#    install(DIRECTORY
+#                ${CMAKE_BINARY_DIR}/bin/${PROJECT_NAME}/
+#        DESTINATION DESTINATION "${CMAKE_INSTALL_BINDIR}"
+#            COMPONENT Runtime
+#    )
+#endif()
 
 INSTALL(TARGETS ${PROJECT_NAME}
     EXPORT ${PROJECT_NAME}Config
@@ -105,7 +115,7 @@ export(TARGETS ${PROJECT_NAME}
 # Install cmake configure files
 install(EXPORT ${PROJECT_NAME}Config
     DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake"
-    COMPONENT Development
+        COMPONENT Development
     )
 # Install cmake version configure file
 if(DEFINED VERSION)
@@ -114,5 +124,6 @@ if(DEFINED VERSION)
         VERSION ${VERSION}
         COMPATIBILITY AnyNewerVersion)
     install(FILES "${CMAKE_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
-        DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake")
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake"
+            COMPONENT Development)
 endif()

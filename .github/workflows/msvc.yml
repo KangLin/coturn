@@ -18,20 +18,12 @@ jobs:
             CMAKE_GENERATOR_PLATFORM: x64
             CMAKE_GENERATOR: "Visual Studio 17 2022"
 
-#          - os: windows-2019
-#            triplet: x64-windows
-#            VCPKG_PLATFORM_TOOLSET: v142
-#            CMAKE_GENERATOR_PLATFORM: x64
-#            CMAKE_GENERATOR: "Visual Studio 16 2019"
-
     runs-on: ${{ matrix.os }}
 
     env:
       SOURCE_DIR:  ${{github.workspace}}\.cache\source
       TOOSL_DIR:   ${{github.workspace}}\.cache\tools
-      INSTALL_DIR: ${{github.workspace}}\.cache\install_msvc_${{matrix.triplet}}_${{matrix.BUILD_TYPE}}_2022_02_14
-      #TODO: modify version
-      COTURN_VERSION: v4.5.2
+      INSTALL_DIR: ${{github.workspace}}\.cache\install_msvc_${{matrix.triplet}}_${{matrix.BUILD_TYPE}}
       VCPKGGITCOMMITID: ed6dc3a43f976099525c5dcde2bfe7dc4092fb3d
       CMAKE_GENERATOR: ${{matrix.CMAKE_GENERATOR}}
       CMAKE_GENERATOR_PLATFORM: ${{matrix.CMAKE_GENERATOR_PLATFORM}}
@@ -57,7 +49,7 @@ jobs:
       with:
         path: |
           ${{env.INSTALL_DIR}}
-        key: cache-installed-${{matrix.os}}-${{matrix.BUILD_TYPE}}
+        key: coturn-cache-installed-${{matrix.os}}-${{matrix.BUILD_TYPE}}
 
     - name: run-vcpkg
       uses: lukka/run-vcpkg@v7.4
@@ -69,12 +61,13 @@ jobs:
         vcpkgDirectory: ${{runner.workspace}}/vcpkg/
         # Since the cache must be invalidated when content of the vcpkg.json file changes, let's
         # compute its hash and append this to the computed cache's key.
-        appendedCacheKey: cache-vcpkg-msvc-${{matrix.os}}-${{matrix.BUILD_TYPE}}-${{env.VCPKGGITCOMMITID}}
+        appendedCacheKey: coturn-cache-vcpkg-msvc-${{matrix.os}}-${{matrix.BUILD_TYPE}}-${{env.VCPKGGITCOMMITID}}
         #additionalCachedPaths: ${{ env.VCPKG_ROOT }}/installed
         vcpkgTriplet: '${{matrix.triplet}}'
         vcpkgArguments: 'zlib openssl pthreads' # libodb-sqlite  libodb-pgsql'
 
     - name: build libevent
+      working-directory: ${{env.SOURCE_DIR}}
       run: |
         IF NOT EXIST ${{env.INSTALL_DIR}}\lib\cmake\LibeventConfig.cmake (
             git clone -b release-2.1.7-rc https://github.com/libevent/libevent.git
@@ -83,6 +76,7 @@ jobs:
             cd build
             cmake .. -DCMAKE_BUILD_TYPE=${{matrix.BUILD_TYPE}} ^
                 -DCMAKE_INSTALL_PREFIX="${{env.INSTALL_DIR}}" ^
+                -DBUILD_TESTING=OFF ^
                 -DCMAKE_TOOLCHAIN_FILE="${{env.VCPKG_ROOT}}/scripts/buildsystems/vcpkg.cmake"
             cmake --build . --config ${{matrix.BUILD_TYPE}}
             cmake --build . --config ${{matrix.BUILD_TYPE}} --target install
@@ -102,26 +96,33 @@ jobs:
             -DLibevent_DIR=${{env.INSTALL_DIR}}\lib\cmake ^
             -DCMAKE_TOOLCHAIN_FILE=${{env.VCPKG_ROOT}}/scripts/buildsystems/vcpkg.cmake
         cmake --build . --config ${{matrix.BUILD_TYPE}}
+        cmake --build . --config ${{matrix.BUILD_TYPE}} --target install
 
     - name: Package
       if: ${{ matrix.BUILD_TYPE == 'Release' }}
       working-directory: ${{github.workspace}}\build
       run: |
-        cmake --build . --config ${{matrix.BUILD_TYPE}} --target install
         copy /Y ${{env.INSTALL_DIR}}\bin\*.dll install\bin
         copy /Y ${{env.INSTALL_DIR}}\lib\*.dll install\bin
         copy /Y ${{env.RUNVCPKG_VCPKG_ROOT}}\installed\${{env.RUNVCPKG_VCPKG_TRIPLET_OUT}}\bin\*.dll install\bin
-        7z a coturn_windows_msvc_${{env.COTURN_VERSION}}.zip .\install\*
-        cpack
+        7z a coturn_windows_msvc.zip ${{github.workspace}}\build\install\*
+        cmake --build . --config ${{matrix.BUILD_TYPE}} --target package
+
+#    - name: Show fail information
+#      if: ${{ failure() }}
+#      run: |
+#        echo "Show fail information"
+#        type ${{github.workspace}}\build\_CPack_Packages\Windows-AMD64\NSIS\NSISOutput.log
 
     - name: update 
+      if: ${{ matrix.BUILD_TYPE == 'Release' }}
       uses: actions/upload-artifact@v2
       with:
-        name: coturn_${{ matrix.os }}
+        name: coturn_msvc_${{ matrix.os }}
         path: |
-          ${{github.workspace}}\build\coturn_windows_msvc_${{env.COTURN_VERSION}}.zip
-          ${{github.workspace}}\build\coturn-*-Windows-AMD64.exe
-      if: ${{ matrix.BUILD_TYPE == 'Release' }}
+          ${{github.workspace}}\build\coturn_windows_msvc.zip
+          ${{github.workspace}}\build\coturn-*.exe
+      
 
 #    - name: Upload To Github Release
 #      if: ${{ matrix.BUILD_TYPE == 'Release' && startsWith(github.ref, 'refs/tags/') }}
@@ -132,4 +133,4 @@ jobs:
 #        prerelease: true
 #        body:
 #        files: |
-#          ${{github.workspace}}\build\coturn_windows_msvc_${{env.COTURN_VERSION}}.zip
+#          ${{github.workspace}}\build\coturn_windows_msvc.zip

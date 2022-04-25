@@ -106,19 +106,36 @@ add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${HEADER_FILES})
 target_link_libraries(${PROJECT_NAME} PRIVATE turn_server ${turnserver_LIBS})
 target_include_directories(${PROJECT_NAME} PRIVATE ${turnserver_include_dirs})
 target_compile_definitions(${PROJECT_NAME} PRIVATE ${turnserver_DEFINED})
+set_target_properties(${PROJECT_NAME} PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/${PROJECT_NAME}
+    )
 
 INSTALL(TARGETS ${PROJECT_NAME}
     RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
         COMPONENT Server
     )
 
-if(NOT WIN32)
+install(DIRECTORY
+        $<TARGET_FILE_DIR:${PROJECT_NAME}>/
+    DESTINATION DESTINATION "${CMAKE_INSTALL_BINDIR}"
+        COMPONENT Server
+    )
+
+if(WIN32)
+    add_custom_target(turnadmin ALL
+        COMMAND
+            ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${PROJECT_NAME}> $<TARGET_FILE_DIR:${PROJECT_NAME}>/turnadmin.exe
+        DEPENDS ${PROJECT_NAME})
+    INSTALL(FILES $<TARGET_FILE_DIR:${PROJECT_NAME}>/turnadmin.exe
+        DESTINATION "${CMAKE_INSTALL_BINDIR}"
+            COMPONENT Server)
+else()
     add_custom_target(turnadmin ALL
         COMMAND
             ${CMAKE_COMMAND} -E create_symlink $<TARGET_FILE:${PROJECT_NAME}> $<TARGET_FILE_DIR:${PROJECT_NAME}>/turnadmin
         DEPENDS ${PROJECT_NAME})
-
     INSTALL(FILES $<TARGET_FILE_DIR:${PROJECT_NAME}>/turnadmin
         DESTINATION "${CMAKE_INSTALL_BINDIR}"
-            COMPONENT Runtime)
+            COMPONENT Server)
 endif()
+
