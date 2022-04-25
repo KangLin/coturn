@@ -80,6 +80,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 # Install head files
 set_target_properties(${PROJECT_NAME} PROPERTIES
+	PUBLIC_HEADER "${HEADER_FILES}"
     VERSION ${VERSION}
     )
 
@@ -91,11 +92,10 @@ INSTALL(TARGETS ${PROJECT_NAME}
         COMPONENT Runtime
     ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
         COMPONENT Development
+	PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/turn
+		COMPONENT Development
     INCLUDES DESTINATION
-        ${CMAKE_INSTALL_INCLUDEDIR}
         ${CMAKE_INSTALL_INCLUDEDIR}/turn
-        ${CMAKE_INSTALL_INCLUDEDIR}/turn/client
-        COMPONENT Development
     )
 
 export(TARGETS ${PROJECT_NAME}
