@@ -45,10 +45,14 @@
 #include <sys/resource.h>
 #endif
 
+#if defined(WIN32)
+	#include <DSRole.h>
+#endif
+
 #if defined(_MSC_VER)
-#include <direct.h>
+	#include <direct.h>
 #else
-#include <unistd.h>
+	#include <unistd.h>
 #endif
 
 #include <stdlib.h>
@@ -756,51 +760,6 @@ char *skip_blanks(char* s)
 
 #if defined(_MSC_VER)
 
-char* dirname(char* path)
-{
-    char drive[_MAX_DRIVE];
-    char dir[_MAX_DIR];
-
-    errno_t err = _splitpath_s(path,
-		drive, _MAX_DRIVE,
-        dir, _MAX_DIR,
-        NULL, 0,
-        NULL, 0);
-    if (err)
-    {
-        TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "split path fail: %d", err);
-        return NULL;
-    }
-
-    int n = strlen(drive) + strlen(dir);
-    if(n > 0)
-        path[n] = 0;
-    else
-        return NULL;
-    return path;
-}
-
-int gettimeofday(struct timeval *tp, void *tzp)
-{
-    time_t clock;
-    struct tm tm;
-    SYSTEMTIME wtm;
-
-    GetLocalTime(&wtm);
-    tm.tm_year = wtm.wYear - 1900;
-    tm.tm_mon = wtm.wMonth - 1;
-    tm.tm_mday = wtm.wDay;
-    tm.tm_hour = wtm.wHour;
-    tm.tm_min = wtm.wMinute;
-    tm.tm_sec = wtm.wSecond;
-    tm.tm_isdst = -1;
-    clock = mktime(&tm);
-    tp->tv_sec = clock;
-    tp->tv_usec = wtm.wMilliseconds * 1000;
-
-    return (0);
-}
-
 LARGE_INTEGER getFILETIMEoffset()
 {
 	SYSTEMTIME s;
@@ -858,6 +817,185 @@ int clock_gettime(int X, struct timeval* tv)
 	tv->tv_sec = t.QuadPart / 1000000;
 	tv->tv_usec = t.QuadPart % 1000000;
 	return 0;
+}
+
+int gettimeofday(struct timeval* tp, void* tzp)
+{
+	time_t clock;
+	struct tm tm;
+	SYSTEMTIME wtm;
+
+	GetLocalTime(&wtm);
+	tm.tm_year = wtm.wYear - 1900;
+	tm.tm_mon = wtm.wMonth - 1;
+	tm.tm_mday = wtm.wDay;
+	tm.tm_hour = wtm.wHour;
+	tm.tm_min = wtm.wMinute;
+	tm.tm_sec = wtm.wSecond;
+	tm.tm_isdst = -1;
+	clock = mktime(&tm);
+	tp->tv_sec = clock;
+	tp->tv_usec = wtm.wMilliseconds * 1000;
+
+	return (0);
+}
+
+char* dirname(char* path)
+{
+	char drive[_MAX_DRIVE];
+	char dir[_MAX_DIR];
+
+	errno_t err = _splitpath_s(path,
+		drive, _MAX_DRIVE,
+		dir, _MAX_DIR,
+		NULL, 0,
+		NULL, 0);
+	if (err)
+	{
+		TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "split path fail: %d", err);
+		return NULL;
+	}
+
+	int n = strlen(drive) + strlen(dir);
+	if (n > 0)
+		path[n] = 0;
+	else
+		return NULL;
+	return path;
+}
+#endif
+
+#if defined(WIN32)
+int getdomainname(char* name, size_t len)
+{
+	DSROLE_PRIMARY_DOMAIN_INFO_BASIC* info;
+	DWORD dw;
+
+	dw = DsRoleGetPrimaryDomainInformation(NULL,
+		     DsRolePrimaryDomainInfoBasic,
+		     (PBYTE*)&info);
+	if (dw != ERROR_SUCCESS)
+	{
+		TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "DsRoleGetPrimaryDomainInformation: %u\n", dw);
+		return -1;
+	}
+
+	do {
+		if (info->DomainForestName)
+		{
+			char* pszOut = NULL;
+			int nOutSize = 0;
+			if (_WTA(info->DomainForestName, wcslen(info->DomainForestName), &pszOut, &nOutSize))
+			{
+				int n = nOutSize - 1;
+				if (nOutSize > len - 1)
+				{
+					n = len - 1;
+				}
+				strncpy(name, pszOut, n);
+				name[n] = 0;
+				TURN_LOG_FUNC(TURN_LOG_LEVEL_DEBUG, "DomainForestName: %s\n", pszOut);
+			}
+			else
+				TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "wchar convert to char fail");
+
+			free(pszOut);
+			break;
+		} else {
+			TURN_LOG_FUNC(TURN_LOG_LEVEL_DEBUG, "DomainForestName is NULL\n");
+		}
+
+		if (info->DomainNameDns)
+		{
+			char* pszOut = NULL;
+			int nOutSize = 0;
+			if (_WTA(info->DomainNameDns, wcslen(info->DomainNameDns), &pszOut, &nOutSize))
+			{
+				int n = nOutSize - 1;
+				if (nOutSize > len - 1)
+				{
+					n = len - 1;
+				}
+				strncpy(name, pszOut, n);
+				name[n] = 0;
+				TURN_LOG_FUNC(TURN_LOG_LEVEL_DEBUG, "DomainNameDns: %s\n", pszOut);
+			}
+			else
+				TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "wchar convert to char fail");
+
+			free(pszOut);
+			break;
+		} else {
+			TURN_LOG_FUNC(TURN_LOG_LEVEL_DEBUG, "DomainNameDns is NULL\n");
+		}
+
+		if (info->DomainNameFlat)
+		{
+			char* pszOut = NULL;
+			int nOutSize = 0;
+			if (_WTA(info->DomainNameFlat, wcslen(info->DomainNameFlat), &pszOut, &nOutSize))
+			{
+				int n = nOutSize - 1;
+				if (nOutSize > len - 1)
+				{
+					n = len - 1;
+				}
+				strncpy(name, pszOut, n);
+				name[n] = 0;
+				TURN_LOG_FUNC(TURN_LOG_LEVEL_DEBUG, "DomainNameFlat: %s\n", pszOut);
+			}
+			else
+				TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "wchar convert to char fail");
+
+			free(pszOut);
+		} else {
+			TURN_LOG_FUNC(TURN_LOG_LEVEL_DEBUG, "DomainNameFlat is NULL\n");
+			return -2;
+		}
+	} while (0);
+
+	DsRoleFreeMemory(info);
+	return 0;
+}
+
+/*!
+* char convert to wchar
+*/
+wchar_t* _ATW(__in char* pszInBuf, __in int nInSize, __out wchar_t** pszOutBuf, __out int* pnOutSize)
+{
+	if (!pszInBuf || !pszOutBuf || !pnOutSize || nInSize <= 0) return NULL;
+	// Get buffer size
+	*pnOutSize = MultiByteToWideChar(NULL, NULL, pszInBuf, nInSize, *pszOutBuf, 0);
+	if (*pnOutSize == 0) return NULL;
+	(*pnOutSize)++;
+	*pszOutBuf = malloc((*pnOutSize) * sizeof(wchar_t));
+	memset((void*)*pszOutBuf, 0, sizeof(wchar_t) * (*pnOutSize));
+	if (MultiByteToWideChar(NULL, NULL, pszInBuf, nInSize, *pszOutBuf, *pnOutSize) == 0)
+	{
+		free(*pszOutBuf);
+		return NULL;
+	}
+	else return *pszOutBuf;
+}
+
+/*!
+* wchar convert to char
+* 
+*/
+char* _WTA(__in wchar_t* pszInBuf, __in int nInSize, __out char** pszOutBuf, __out int* pnOutSize)
+{
+	if (!pszInBuf || !pszOutBuf || !pnOutSize || nInSize <= 0) return NULL;
+	*pnOutSize = WideCharToMultiByte(NULL, NULL, pszInBuf, nInSize, *pszOutBuf, 0, NULL, NULL);
+	if (*pnOutSize == 0) return NULL;
+	(*pnOutSize)++;
+	*pszOutBuf = malloc(*pnOutSize * sizeof(char));
+	memset((void*)*pszOutBuf, 0, sizeof(char) * (*pnOutSize));
+	if (WideCharToMultiByte(NULL, NULL, pszInBuf, nInSize, *pszOutBuf, *pnOutSize, NULL, NULL) == 0)
+	{
+		free(*pszOutBuf);
+		return NULL;
+	}
+	else return *pszOutBuf;
 }
 
 #endif

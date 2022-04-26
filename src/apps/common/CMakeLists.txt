@@ -23,7 +23,7 @@ endif()
 
 if(MSVC OR MINGW)
     list(APPEND COMMON_DEFINED WINDOWS)
-	list(APPEND COMMON_LIBS Ws2_32.lib)
+	list(APPEND COMMON_LIBS Ws2_32 netapi32)
 endif()
 
 find_package(OpenSSL REQUIRED)

@@ -2706,12 +2706,11 @@ static void drop_privileges(void)
 
 static void init_domain(void)
 {
-	//TODO: modify in windows
-#if !defined(TURN_NO_GETDOMAINNAME) && !defined(WINDOWS)
-	if(getdomainname(turn_params.domain,sizeof(turn_params.domain)-1)<0) {
-		turn_params.domain[0]=0;
-	} else if(!strcmp(turn_params.domain,"(none)")) {
-		turn_params.domain[0]=0;
+#if !defined(TURN_NO_GETDOMAINNAME)
+	if (getdomainname(turn_params.domain, sizeof(turn_params.domain) - 1) < 0) {
+		turn_params.domain[0] = 0;
+	} else if (!strcmp(turn_params.domain, "(none)")) {
+		turn_params.domain[0] = 0;
 	}
 #endif
 }
