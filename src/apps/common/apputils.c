@@ -1056,8 +1056,16 @@ unsigned long set_system_parameters(int max_resources)
 	build_base64_decoding_table();
 
 	ignore_sigpipe();
-#if defined(__linux__)
-	if(max_resources) {
+
+	if (max_resources) {
+#if defined(WINDOWS)
+		int num = 0;
+		//TODO: get max socket? by KangLin <kl222@126.com>
+
+		num = _getmaxstdio();
+		return num;
+#elif defined(__linux__)
+	
 		struct rlimit rlim;
 		if(getrlimit(RLIMIT_NOFILE, &rlim)<0) {
 			perror("Cannot get system limit");
@@ -1068,8 +1076,10 @@ unsigned long set_system_parameters(int max_resources)
 			}
 			return (unsigned long)rlim.rlim_cur;
 		}
-	}
+	
 #endif
+	}
+
 	return 0;
 }
 
