@@ -37,12 +37,13 @@
 
 #if defined(__unix__) || defined(unix) || defined(__APPLE__) \
 	|| defined(__DARWIN__) || defined(__MACH__)
-#include <ifaddrs.h>
-#include <getopt.h>
-#include <libgen.h>
-#include <pthread.h>
-#include <sys/time.h>
-#include <sys/resource.h>
+    #include <ifaddrs.h>
+    #include <getopt.h>
+    #include <libgen.h>
+    #include <pthread.h>
+    #include <sys/time.h>
+    #include <sys/resource.h>
+    #include <sys/sysinfo.h>
 #endif
 
 #if defined(WIN32)
@@ -959,8 +960,14 @@ int getdomainname(char* name, size_t len)
 }
 
 /*!
-* char convert to wchar
-*/
+ * \brief convert char to wchar
+ * 
+ * \param pszInBuf: input buffer of wchar string 
+ * \param nInSize: size of wchar string
+ * \param pszOutBuf: output buffer of char string
+ * \param pnOutSize: size of char string
+ * \return 
+ */
 wchar_t* _ATW(__in char* pszInBuf, __in int nInSize, __out wchar_t** pszOutBuf, __out int* pnOutSize)
 {
 	if (!pszInBuf || !pszOutBuf || !pnOutSize || nInSize <= 0) return NULL;
@@ -979,9 +986,14 @@ wchar_t* _ATW(__in char* pszInBuf, __in int nInSize, __out wchar_t** pszOutBuf, 
 }
 
 /*!
-* wchar convert to char
-* 
-*/
+ * \brief convert wchar to char
+ * 
+ * \param pszInBuf: input buffer of char string 
+ * \param nInSize: size of char string
+ * \param pszOutBuf: output buffer of wchar string
+ * \param pnOutSize: size of wchar string
+ * \return 
+ */
 char* _WTA(__in wchar_t* pszInBuf, __in int nInSize, __out char** pszOutBuf, __out int* pnOutSize)
 {
 	if (!pszInBuf || !pszOutBuf || !pnOutSize || nInSize <= 0) return NULL;
@@ -1219,6 +1231,28 @@ unsigned long set_system_parameters(int max_resources)
 	}
 
 	return 0;
+}
+
+unsigned long get_system_number_of_cpus()
+{
+#if defined(WINDOWS)
+	SYSTEM_INFO sysInfo;
+	GetSystemInfo(&sysInfo);
+	TURN_LOG_FUNC(TURN_LOG_LEVEL_DEBUG, "System cpu num is %d\n", sysInfo.dwNumberOfProcessors);
+	TURN_LOG_FUNC(TURN_LOG_LEVEL_DEBUG, "System enable num is 0x%X\n", sysInfo.dwActiveProcessorMask);
+	return sysInfo.dwNumberOfProcessors;
+#else
+    #if defined(_SC_NPROCESSORS_ONLN)
+		TURN_LOG_FUNC(TURN_LOG_LEVEL_DEBUG, "System cpu num is %d \n", sysconf(_SC_NPROCESSORS_CONF));
+		TURN_LOG_FUNC(TURN_LOG_LEVEL_DEBUG, "System enable num is %d\n", sysconf(_SC_NPROCESSORS_ONLN));
+		return sysconf(_SC_NPROCESSORS_CONF);
+	#else
+		//GNU way
+		TURN_LOG_FUNC(TURN_LOG_LEVEL_DEBUG, "System cpu num is %d\n", get_nprocs_conf());
+		TURN_LOG_FUNC(TURN_LOG_LEVEL_DEBUG, "System enable num is %d\n", get_nprocs());
+		return get_nprocs_conf();
+	#endif
+#endif
 }
 
 ////////////////////// Base 64 ////////////////////////////

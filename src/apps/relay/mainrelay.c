@@ -2786,25 +2786,23 @@ int main(int argc, char **argv)
 	turn_params.no_dtls = 1;
 #endif
 
-#if defined(_SC_NPROCESSORS_ONLN)
-
 	{
-		 turn_params.cpus = (long)sysconf(_SC_NPROCESSORS_CONF);
+		int cpus = get_system_number_of_cpus();
+		if (0 < cpus)
+			turn_params.cpus = get_system_number_of_cpus();
+		TURN_LOG_FUNC(TURN_LOG_LEVEL_INFO, "System cpu num is %d\n", turn_params.cpus);
+		if (turn_params.cpus < DEFAULT_CPUS_NUMBER)
+			turn_params.cpus = DEFAULT_CPUS_NUMBER;
+		else if (turn_params.cpus > MAX_NUMBER_OF_GENERAL_RELAY_SERVERS)
+			turn_params.cpus = MAX_NUMBER_OF_GENERAL_RELAY_SERVERS;
 
-		 if(turn_params.cpus<DEFAULT_CPUS_NUMBER)
-			 turn_params.cpus = DEFAULT_CPUS_NUMBER;
-		 else if(turn_params.cpus>MAX_NUMBER_OF_GENERAL_RELAY_SERVERS)
-			 turn_params.cpus = MAX_NUMBER_OF_GENERAL_RELAY_SERVERS;
-
-		 turn_params.general_relay_servers_number = (turnserver_id)turn_params.cpus;
+		turn_params.general_relay_servers_number = (turnserver_id)turn_params.cpus;
 	}
-
-#endif
 
 	memset(&turn_params.default_users_db, 0, sizeof(default_users_db_t));
 	turn_params.default_users_db.ram_db.static_accounts = ur_string_map_create(free);
 
-	if(strstr(argv[0],"turnadmin"))
+	if(strstr(argv[0], "turnadmin"))
 		return adminmain(argc,argv);
 	// Zero pass apply the log options.
 	read_config_file(argc,argv,0);
