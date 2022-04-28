@@ -44,7 +44,13 @@ https://aur.archlinux.org/packages/coturn/
 3) FreeBSD and OpenSUSE have the predecessor of this project packaged
 (rfc5766-turn-server).
  
+4) Windows has this project packaged
+
+https://github.com/coturn/coturn
+
 II. DOWNLOAD 
+
+1. Download source of packaged
 
 You have to download the archive file turnserver-*.tar.gz and unpack it:
 
@@ -52,6 +58,12 @@ $ tar xfz turnserver-*.tgz
 
 it will create the directory 'turnserver-*' with all sources, build files, 
 examples and documentation.
+
+2. Download from git repository:
+
+https://github.com/coturn/coturn
+
+$ git clone https://github.com/coturn/coturn.git
 
 III. BUILD
 
@@ -189,24 +201,22 @@ configure command line. For example:
 
 Build the project:
 
-	$ cmake --build . 
+        $ cmake --build . 
 
-Install all files(runtime programmes and develop library):
+Packaged:
+
+        $ cmake --build . --target package
+
+This step is generated binary package. The package is used to other machine
+install TURN server.
+
+Install all files:
 
         $ cmake --build . --target install
 
 Remove all installed:
 
         $ cmake --build . --target uninstall
-
-If you want to only install runtime programmes(programmes, configure files,
-script files and database):
-
-        $ cmake --build . --target install-runtime
-
-Remove all installed:
-
-        $ cmake --build . --target uninstall-runtime
 
 IV. OPENSSL
 
@@ -317,24 +327,25 @@ The following platforms are supported
 	- Linux,
 	- BSD family (Mac OS X, FreeBSD, NetBSD, OpenBSD),
 	- Solaris 11,
-	- Cygwin
+    - Windows
+	  - Cygwin
+      - Mingw
+      - MSVC
 
 It must work on other *NIXes, as well. The configure script and/or 
 Makefile may need adjustments for other *NIXes not mentioned above.
 
-The code of the client messaging library can be compiled and used on 
-Windows, too, but it is not supported for now.
-
 VI. COMPILERS
 
 The TURN Server is written in C programming language, for portability 
-and for the performance reasons. 
+and for the performance reasons. Currently using the C11 standard.
 
 The tested C compilers are:
 
 	- gcc 3.4.4 thru 4.8.x
 	- clang 3.0 or better
 	- Solaris Studio 12 C compiler
+    - MSVC 2017 and later versions
 
 It may be compiled with other compilers, too.
 
@@ -346,9 +357,11 @@ The code is compatible with C++ compiler, and a C++ compiler
 
 VIII. WHICH EXTRA LIBRARIES AND UTILITIES YOU NEED 
 
-In addition to common *NIX OS services and libraries, to compile this code, 
+In addition to common OS services and libraries, to compile this code, 
 OpenSSL (version 1.0.0a or better recommended) and libevent2 (version 2.0.5 
-or better) are required, SQLite C development library and header is optional,
+or better) are required,
+the ptheads4w is required Windows,
+the SQLite C development library and header is optional,
 the PostgreSQL C client development setup is optional, 
 the MySQL (MariaDB) C client development setup is optional, 
 the MongoDB C Driver and the Hiredis development files for Redis database 
@@ -357,16 +370,17 @@ the libraries to link with, are to be installed. For the runtime, only the
 runtime setup is required. If the build is modified for 
 static linking, then even runtime installation is not needed.
 
-OpenSSL, SQLite, libevent2, PostgreSQL, MySQL (or MariaDB) and Hiredis 
+OpenSSL, libevent2, SQLite, PostgreSQL, MySQL (or MariaDB) and Hiredis 
 libraries can be downloaded from their web sites:
  - http://www.openssl.org (required);
  - http://www.libevent.org (required);
+ - https://sourceware.org/pub/pthreads-win32/ (Windows required)
  - http://www.sqlite.org (optional);
  - http://www.postgresql.org (optional);
  - http://www.mysql.org (or http://mariadb.org) (optional);
  - https://github.com/mongodb/mongo-c-driver (optional);
  - http://redis.io (optional).
- 
+
 The installations are pretty straightforward - the usual 
 "./configure" and "make install" commands. Install them into their default 
 locations - the configure script and the Makefile are assuming that they are 
@@ -454,6 +468,12 @@ have a simpler way of the third party tools installation:
 	install Hiredis, but everything else can be found in the software 
 	repository. Also, if you would like to make an RPM for CentOS,
 	check the directory rpm/ with the instructions.
+
+	*****) Windows
+
+    you can use vcpkg: https://github.com/microsoft/vcpkg
+
+	> vcpkg install zlib openssl pthreads libodb-sqlite libodb-pgsql hiredis mongo-c-driver
 
 NOTE: If your tools are installed in non-standard locations, you will 
 have to adjust CFLAGS and LDFLAGS environment variables for TURN 
@@ -675,9 +695,47 @@ library, from http://www.openssl.org. You will have
 to handle the dynamic linking of the generated binaries, or use the
 static linking (see the section OPENSSL).
 
-XII. MS Windows and Cygwin support
+XII. MS Windows, Mingw and Cygwin support
 
-Currently, this project cannot be compiled under MS Windows.
+Currently, this project can be compiled under MS Windows. 
+It can only be compiled with CMAKE.
+
+1. MSVC
+
+   > git clone https://github.com/microsoft/vcpkg.git
+   > cd vcpkg
+   > bootstrap-vcpkg.bat
+   > vcpkg install zlib openssl pthreads libodb-sqlite libodb-pgsql hiredis mongo-c-driver
+   > cd ..
+   > git clone https://github.com/coturn/coturn.git
+   > cd coturn
+   > mkdir build
+   > cd build
+   > cmake .. -DCMAKE_TOOLCHAIN_FILE=[path to vcpkg]/scripts/buildsystems/vcpkg.cmake
+   > cmake --build .
+   > cmake --build . --config ${{matrix.BUILD_TYPE}} --target package
+
+2. Mingw
+
+   $ pacman.exe -S  mingw-w64-x86_64-cmake \
+            mingw-w64-x86_64-make \
+            mingw-w64-x86_64-nsis \
+            mingw-w64-x86_64-gcc \
+            mingw-w64-x86_64-zlib \
+            mingw-w64-x86_64-openssl \
+            mingw-w64-x86_64-libevent \
+            mingw-w64-x86_64-sqlite3 \
+            mingw-w64-x86_64-hiredis \
+            mingw-w64-x86_64-postgresql \
+            git base-devel
+   $ git clone https://github.com/coturn/coturn.git
+   $ mkdir build
+   $ cd build
+   $ cmake .. -G"MinGW Makefiles"
+   $ cmake --build .
+   $ cmake --build . --target package
+
+3. Cygwin
 
 As the project is using fairly straightforward *NIX API, it is supported 
 under Cygwin environment in MS Windows.

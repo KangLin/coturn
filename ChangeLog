@@ -47,7 +47,7 @@ Version 4.5.3 'dan Eider':
 		* Restore no_stdout_log behavior
 	- merge PR #727 (by JoKoT3)
 		* Support older mysql client version in configure
-	- merge PR #721 (by KangLin)
+	- merge PR #721 (by Kang Lin <kl222@126.com>)
 		* Add to support cmake
 	- merge PR #717 (by marcoschum)
 		* Fix typo in turnserver.conf
