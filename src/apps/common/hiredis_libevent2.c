@@ -33,14 +33,14 @@
 
 #if !defined(TURN_NO_HIREDIS)
 
+#include <hiredis/hiredis.h>
+#include <hiredis/async.h>
+
 #include "hiredis_libevent2.h"
 #include "ns_turn_utils.h"
 
 #include <event2/bufferevent.h>
 #include <event2/buffer.h>
-
-#include <hiredis/hiredis.h>
-#include <hiredis/async.h>
 
 //////////////// Libevent context ///////////////////////
 
