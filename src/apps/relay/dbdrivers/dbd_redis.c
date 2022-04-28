@@ -29,12 +29,12 @@
  * SUCH DAMAGE.
  */
 
+#if !defined(TURN_NO_HIREDIS)
+
+#include <hiredis/hiredis.h>
+#include "hiredis_libevent2.h"
 #include "../mainrelay.h"
 #include "dbd_redis.h"
-
-#if !defined(TURN_NO_HIREDIS)
-#include "hiredis_libevent2.h"
-#include <hiredis/hiredis.h>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 

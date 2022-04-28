@@ -43,6 +43,7 @@ jobs:
             mingw-w64-x86_64-libevent ^
             mingw-w64-x86_64-sqlite3 ^
             mingw-w64-x86_64-hiredis ^
+            mingw-w64-x86_64-postgresql ^
             git base-devel
 
     - name: make_directory
