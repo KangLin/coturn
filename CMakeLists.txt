@@ -1,6 +1,6 @@
 # Author: Kang Lin <kl222@126.com>
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.7)
 
 project(coturn)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
