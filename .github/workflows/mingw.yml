@@ -98,4 +98,5 @@ jobs:
         name: coturn_mingw_${{ matrix.os }}
         path: |
           ${{github.workspace}}\build\coturn_windows_mingw.zip
-          ${{github.workspace}}\build\coturn-*.exe
+          ${{github.workspace}}\build\coturn*.exe
+          ${{github.workspace}}\build\coturn*.md5

@@ -4,28 +4,43 @@ on: [push]
 
 jobs:
   compile:
-    name: ${{ matrix.os }}-${{matrix.CMAKE_GENERATOR}}-${{matrix.CMAKE_GENERATOR_PLATFORM}}-${{matrix.BUILD_TYPE}}-${{matrix.BUILD_SHARED_LIBS}}
+    name: ${{matrix.os}}-vc-${{matrix.VCPKG_PLATFORM_TOOLSET}}-${{matrix.CMAKE_GENERATOR_PLATFORM}}-${{matrix.BUILD_TYPE}}-${{matrix.BUILD_SHARED_LIBS}}
 
     strategy:
       matrix:
         BUILD_TYPE: [Release, Debug]
         BUILD_SHARED_LIBS: [OFF]
-        os: [windows-2022] #, windows-2019]
+        #VCPKG_PLATFORM_TOOLSET: [v143, v142, v141]
+        CMAKE_GENERATOR_PLATFORM: [x64, Win32]
+        os: [windows-latest]
         include:
-          - os: windows-2022
-            triplet: x64-windows
+          # MSVC 2022
+          - triplet: x64-windows
             VCPKG_PLATFORM_TOOLSET: v143
             CMAKE_GENERATOR_PLATFORM: x64
-            CMAKE_GENERATOR: "Visual Studio 17 2022"
 
-    runs-on: ${{ matrix.os }}
+          - triplet: x86-windows
+            VCPKG_PLATFORM_TOOLSET: v143
+            CMAKE_GENERATOR_PLATFORM: Win32
+
+          # MSVC 2019
+          - triplet: x86-windows
+            VCPKG_PLATFORM_TOOLSET: v142
+            CMAKE_GENERATOR_PLATFORM: Win32
+ 
+          # MSVC 2017
+          - triplet: x86-windows
+            VCPKG_PLATFORM_TOOLSET: v141
+            CMAKE_GENERATOR_PLATFORM: Win32
+ 
+    runs-on: ${{matrix.os}}
 
     env:
       SOURCE_DIR:  ${{github.workspace}}\.cache\source
       TOOSL_DIR:   ${{github.workspace}}\.cache\tools
       INSTALL_DIR: ${{github.workspace}}\.cache\install_msvc_${{matrix.triplet}}_${{matrix.BUILD_TYPE}}
       VCPKGGITCOMMITID: ed6dc3a43f976099525c5dcde2bfe7dc4092fb3d
-      CMAKE_GENERATOR: ${{matrix.CMAKE_GENERATOR}}
+      VCPKG_PLATFORM_TOOLSET: ${{matrix.VCPKG_PLATFORM_TOOLSET}}
       CMAKE_GENERATOR_PLATFORM: ${{matrix.CMAKE_GENERATOR_PLATFORM}}
 
     defaults:
@@ -49,7 +64,7 @@ jobs:
       with:
         path: |
           ${{env.INSTALL_DIR}}
-        key: coturn-cache-installed-${{matrix.os}}-${{matrix.BUILD_TYPE}}
+        key: coturn-cache-installed-${{matrix.os}}-vc${{matrix.VCPKG_PLATFORM_TOOLSET}}-${{matrix.triplet}}-${{matrix.BUILD_TYPE}}
 
     - name: run-vcpkg
       uses: lukka/run-vcpkg@v7.4
@@ -61,7 +76,7 @@ jobs:
         vcpkgDirectory: ${{runner.workspace}}/vcpkg/
         # Since the cache must be invalidated when content of the vcpkg.json file changes, let's
         # compute its hash and append this to the computed cache's key.
-        appendedCacheKey: coturn-cache-vcpkg-msvc-${{matrix.os}}-${{matrix.BUILD_TYPE}}-${{env.VCPKGGITCOMMITID}}
+        appendedCacheKey: coturn-cache-vcpkg-msvc-${{matrix.os}}-vc${{matrix.VCPKG_PLATFORM_TOOLSET}}-${{matrix.triplet}}-${{matrix.BUILD_TYPE}}-${{env.VCPKGGITCOMMITID}}
         #additionalCachedPaths: ${{ env.VCPKG_ROOT }}/installed
         vcpkgTriplet: '${{matrix.triplet}}'
         vcpkgArguments: 'zlib openssl pthreads libodb-sqlite libodb-pgsql hiredis mongo-c-driver'
@@ -69,12 +84,15 @@ jobs:
     - name: build libevent
       working-directory: ${{env.SOURCE_DIR}}
       run: |
-        IF NOT EXIST ${{env.INSTALL_DIR}}\lib\cmake\LibeventConfig.cmake (
+        IF NOT EXIST ${{env.INSTALL_DIR}}\cmake\LibeventConfig.cmake (
             git clone -b release-2.1.7-rc https://github.com/libevent/libevent.git
             cd libevent
             cmake -E make_directory build
             cd build
-            cmake .. -DCMAKE_BUILD_TYPE=${{matrix.BUILD_TYPE}} ^
+            cmake .. ^
+                -A ${{matrix.CMAKE_GENERATOR_PLATFORM}} ^
+                -T ${{matrix.VCPKG_PLATFORM_TOOLSET}} ^
+                -DCMAKE_BUILD_TYPE=${{matrix.BUILD_TYPE}} ^
                 -DCMAKE_INSTALL_PREFIX="${{env.INSTALL_DIR}}" ^
                 -DBUILD_TESTING=OFF ^
                 -DCMAKE_TOOLCHAIN_FILE="${{env.VCPKG_ROOT}}/scripts/buildsystems/vcpkg.cmake"
@@ -87,13 +105,13 @@ jobs:
         cmake -E make_directory ${{github.workspace}}/build
         cd ${{github.workspace}}/build
         cmake ${{github.workspace}} ^
-            -G "${{env.CMAKE_GENERATOR}}" ^
+            -A ${{matrix.CMAKE_GENERATOR_PLATFORM}} ^
+            -T ${{matrix.VCPKG_PLATFORM_TOOLSET}} ^
             -DWITH_MYSQL=OFF ^
-            -DCMAKE_GENERATOR_PLATFORM=${{matrix.CMAKE_GENERATOR_PLATFORM}} ^
             -DBUILD_SHARED_LIBS=${{matrix.BUILD_SHARED_LIBS}} ^
             -DCMAKE_BUILD_TYPE=${{matrix.BUILD_TYPE}} ^
             -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/build/install ^
-            -DLibevent_DIR=${{env.INSTALL_DIR}}\lib\cmake ^
+            -DLibevent_DIR=${{env.INSTALL_DIR}}\cmake ^
             -DCMAKE_TOOLCHAIN_FILE=${{env.VCPKG_ROOT}}/scripts/buildsystems/vcpkg.cmake
         cmake --build . --config ${{matrix.BUILD_TYPE}}
         cmake --build . --config ${{matrix.BUILD_TYPE}} --target install
@@ -118,10 +136,11 @@ jobs:
       if: ${{ matrix.BUILD_TYPE == 'Release' }}
       uses: actions/upload-artifact@v2
       with:
-        name: coturn_msvc_${{ matrix.os }}
+        name: coturn_msvc-${{matrix.VCPKG_PLATFORM_TOOLSET}}-${{matrix.CMAKE_GENERATOR_PLATFORM}}-${{matrix.BUILD_SHARED_LIBS}}
         path: |
           ${{github.workspace}}\build\coturn_windows_msvc.zip
-          ${{github.workspace}}\build\coturn-*.exe
+          ${{github.workspace}}\build\coturn*.exe
+          ${{github.workspace}}\build\coturn*.md5
       
 
 #    - name: Upload To Github Release
