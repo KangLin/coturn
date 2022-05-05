@@ -110,11 +110,13 @@ INSTALL(TARGETS ${PROJECT_NAME}
 
 export(TARGETS ${PROJECT_NAME}
     APPEND FILE ${CMAKE_BINARY_DIR}/${PROJECT_NAME}Config.cmake
+    NAMESPACE coturn::
     )
 
 # Install cmake configure files
 install(EXPORT ${PROJECT_NAME}Config
-    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake"
+    NAMESPACE coturn::
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/coturn"
         COMPONENT Development
     )
 # Install cmake version configure file
@@ -124,6 +126,6 @@ if(DEFINED VERSION)
         VERSION ${VERSION}
         COMPATIBILITY AnyNewerVersion)
     install(FILES "${CMAKE_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
-        DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake"
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/coturn"
             COMPONENT Development)
 endif()

@@ -96,6 +96,14 @@ if(BUILD_TEST)
     add_subdirectory(test)
 endif(BUILD_TEST)
 
+CONFIGURE_FILE(
+    "${CMAKE_SOURCE_DIR}/cmake/coturnConfig.cmake.in"
+    "${CMAKE_BINARY_DIR}/coturnConfig.cmake"
+    IMMEDIATE @ONLY)
+install(FILES "${CMAKE_BINARY_DIR}/coturnConfig.cmake"
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/coturn"
+        COMPONENT Development)
+
 install(DIRECTORY man DESTINATION .
     COMPONENT Runtime)
 install(DIRECTORY turndb/
