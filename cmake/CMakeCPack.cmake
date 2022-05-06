@@ -34,23 +34,38 @@ SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "coturn: Free open source implementation o
 set(CPACK_RESOURCE_FILE_README "${CMAKE_SOURCE_DIR}/README.md")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_BINARY_DIR}/LICENSE.txt")
 set(CPACK_PACKAGE_HOMEPAGE_URL "https://github.com/coturn/coturn")
-
-set(CPACK_PACKAGE_CONTACT "misi")
-set(CPACK_DEBIAN_PACKAGE_MAINTAINER "misi@majd.eu")
-set(CPACK_DEBIAN_ARCHITECTURE ${CMAKE_SYSTEM_PROCESSOR})
+set(CPACK_PACKAGE_CONTACT "misi <misi@majd.eu>")
 
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "coturn")
 set(CPACK_PACKAGE_CHECKSUM "MD5")
 
+############### Debian ###################
+set(CPACK_BINARY_DEB ON)
+set(CPACK_DEBIAN_PACKAGE_SOURCE coturn)
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "misi <misi@majd.eu>")
+#set(CPACK_DEBIAN_ARCHITECTURE ${CMAKE_SYSTEM_PROCESSOR})
+set(CPACK_DEBIAN_PACKAGE_SECTION "main")
+set(CPACK_DEBIAN_PACKAGE_PREDEPENDS "debhelper (>= 6), cmake (>= 2.8.0), dh-systemd (>= 1.5)")
+#set(CMAKE_INSTALL_RPATH )
+set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+set(CPACK_DEBIAN_PACKAGE_GENERATE_SHLIBS ON)
+#set(CPACK_DEBIAN_PACKAGE_GENERATE_SHLIBS_POLICY ">=")
+#set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA
+#    "${CMAKE_CURRENT_SOURCE_DIR}/prerm;${CMAKE_CURRENT_SOURCE_DIR}/postrm")
+############### Debian ###################
+
 #set(CPACK_PACKAGE_EXECUTABLES turnadmin turnclient)
 #set(CPACK_CREATE_DESKTOP_LINKS turnadmin turnclient)
 
+############### NSIS ###################
+set(CPACK_BINARY_NSIS ON)
 #set(CPACK_NSIS_INSTALL_ROOT "$LOCALAPPDATA")
 set(CPACK_NSIS_MODIFY_PATH ON)
 set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
 #set(CPACK_PACKAGE_ICON "${CMAKE_SOURCE_DIR}/resources\\\\coturn_Install.bmp")
 #set(CPACK_NSIS_MUI_ICON "${CMAKE_SOURCE_DIR}/resources\\\\coturn_Icon_96px.ico")
 #set(CPACK_NSIS_MUI_UNICON "${CMAKE_SOURCE_DIR}/resource\\\\coturn_Icon_96px.ico")
+############### NSIS ###################
 
 #set(CPACK_COMPONENTS_GROUPING ALL_COMPONENTS_IN_ONE )
 set(CPACK_COMPONENTS_ALL Runtime Development Tools Client Server examples)
