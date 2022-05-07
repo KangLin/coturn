@@ -40,7 +40,9 @@ set(CPACK_PACKAGE_INSTALL_DIRECTORY "coturn")
 set(CPACK_PACKAGE_CHECKSUM "MD5")
 
 ############### Debian ###################
-set(CPACK_BINARY_DEB ON)
+if(UNIX)
+	set(CPACK_BINARY_DEB ON)
+endif()
 set(CPACK_DEBIAN_PACKAGE_SOURCE coturn)
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "misi <misi@majd.eu>")
 #set(CPACK_DEBIAN_ARCHITECTURE ${CMAKE_SYSTEM_PROCESSOR})
@@ -58,7 +60,9 @@ set(CPACK_DEBIAN_PACKAGE_GENERATE_SHLIBS ON)
 #set(CPACK_CREATE_DESKTOP_LINKS turnadmin turnclient)
 
 ############### NSIS ###################
-set(CPACK_BINARY_NSIS ON)
+if(WIN32)
+	set(CPACK_BINARY_NSIS ON)
+endif()
 #set(CPACK_NSIS_INSTALL_ROOT "$LOCALAPPDATA")
 set(CPACK_NSIS_MODIFY_PATH ON)
 set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
@@ -68,49 +72,20 @@ set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
 ############### NSIS ###################
 
 #set(CPACK_COMPONENTS_GROUPING ALL_COMPONENTS_IN_ONE )
-set(CPACK_COMPONENTS_ALL Runtime Development Tools Client Server examples)
+set(CPACK_COMPONENTS_ALL Runtime Development)
 
 SET(CMAKE_INSTALL_SYSTEM_RUNTIME_COMPONENT Runtime)
 include(InstallRequiredSystemLibraries)
 include(CPackComponent)
 include(CPack)
 
-cpack_add_component_group(Applications)
-cpack_add_component_group(Libraries)
-
 cpack_add_component(Development
     DISPLAY_NAME  "Development"
     DESCRIPTION   "Development"
-	DEPENDS Runtime
-	GROUP Libraries
+    DEPENDS Runtime
     )
 
 cpack_add_component(Runtime
     DISPLAY_NAME  "Runtime"
     DESCRIPTION   "Runtime"
-	GROUP Libraries
-    )
-
-cpack_add_component(Client
-    DISPLAY_NAME  "Client"
-    DESCRIPTION   "Client"
-    DEPENDS Runtime
-    GROUP Applications)
-
-cpack_add_component(Server
-    DISPLAY_NAME  "Server"
-    DESCRIPTION   "Server"
-    DEPENDS Runtime
-    GROUP Applications)
-
-cpack_add_component(Tools
-    DISPLAY_NAME  "Tools"
-    DESCRIPTION   "Tools"
-    DEPENDS Runtime
-    GROUP Applications)
-
-cpack_add_component(examples
-    DISPLAY_NAME  "examples"
-    DESCRIPTION   "examples"
-	DEPENDS Runtime
     )

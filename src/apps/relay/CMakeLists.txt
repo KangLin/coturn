@@ -118,18 +118,18 @@ target_link_libraries(${PROJECT_NAME} PRIVATE turn_server ${turnserver_LIBS})
 target_include_directories(${PROJECT_NAME} PRIVATE ${turnserver_include_dirs})
 target_compile_definitions(${PROJECT_NAME} PRIVATE ${turnserver_DEFINED})
 set_target_properties(${PROJECT_NAME} PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/${PROJECT_NAME}
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
     )
 
 INSTALL(TARGETS ${PROJECT_NAME}
     RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
-        COMPONENT Server
+        COMPONENT Runtime
     )
 
 install(DIRECTORY
         $<TARGET_FILE_DIR:${PROJECT_NAME}>/
     DESTINATION DESTINATION "${CMAKE_INSTALL_BINDIR}"
-        COMPONENT Server
+        COMPONENT Runtime
     )
 
 if(WIN32)
@@ -139,7 +139,7 @@ if(WIN32)
         DEPENDS ${PROJECT_NAME})
     INSTALL(FILES $<TARGET_FILE_DIR:${PROJECT_NAME}>/turnadmin.exe
         DESTINATION "${CMAKE_INSTALL_BINDIR}"
-            COMPONENT Server)
+            COMPONENT Runtime)
 else()
     add_custom_target(turnadmin ALL
         COMMAND
@@ -147,6 +147,6 @@ else()
         DEPENDS ${PROJECT_NAME})
     INSTALL(FILES $<TARGET_FILE_DIR:${PROJECT_NAME}>/turnadmin
         DESTINATION "${CMAKE_INSTALL_BINDIR}"
-            COMPONENT Server)
+            COMPONENT Runtime
+		)
 endif()
-

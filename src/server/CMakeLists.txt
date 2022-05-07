@@ -1,4 +1,4 @@
-# Author: Kang Lin (kl222@126.com)
+# Author: Kang Lin <kl222@126.com>
 
 project(turn_server)
 
@@ -29,8 +29,8 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/${PROJECT_NAME}
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/${PROJECT_NAME}
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
     ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
     PUBLIC_HEADER "${HEADER_FILES}"  # Install head files
     VERSION ${VERSION}
