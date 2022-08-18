@@ -39,7 +39,7 @@ endif()
 
 find_package(Libevent CONFIG)
 if(Libevent_FOUND)
-    list(APPEND COMMON_LIBS libevent::core libevent::extra)
+    list(APPEND COMMON_LIBS libevent::core libevent::extra libevent::openssl)
 else()
     find_package(Libevent MODULE)
     if(Libevent_FOUND)
