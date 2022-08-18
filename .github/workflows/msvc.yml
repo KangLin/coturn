@@ -79,7 +79,7 @@ jobs:
         appendedCacheKey: coturn-cache-vcpkg-msvc-${{matrix.os}}-vc${{matrix.VCPKG_PLATFORM_TOOLSET}}-${{matrix.triplet}}-${{matrix.BUILD_TYPE}}-${{env.VCPKGGITCOMMITID}}
         #additionalCachedPaths: ${{ env.VCPKG_ROOT }}/installed
         vcpkgTriplet: '${{matrix.triplet}}'
-        vcpkgArguments: 'zlib openssl pthreads libodb-sqlite libodb-pgsql hiredis mongo-c-driver'
+        vcpkgArguments: 'zlib openssl pthreads sqlite3 libpq hiredis mongo-c-driver'
 
     - name: build libevent
       working-directory: ${{env.SOURCE_DIR}}
