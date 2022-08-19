@@ -67,19 +67,34 @@ jobs:
         key: coturn-cache-installed-${{matrix.os}}-vc${{matrix.VCPKG_PLATFORM_TOOLSET}}-${{matrix.triplet}}-${{matrix.BUILD_TYPE}}
 
     - name: run-vcpkg
-      uses: lukka/run-vcpkg@v7.4
+      uses: lukka/run-vcpkg@v10
       with:
-        # Indicates whether to only setup vcpkg (i.e. installing it and setting the environment variables VCPKG_ROOT, RUNVCPK_VCPKG_ROOT), without installing any port.
-        #setupOnly: # optional
-        #vcpkgGitURL: https://github.com/KangLin/vcpkg.git
-        vcpkgGitCommitId: ${{env.VCPKGGITCOMMITID}}
-        vcpkgDirectory: ${{runner.workspace}}/vcpkg/
+        # This is the default location of the directory containing vcpkg sources.
+        # Change it to the right location if needed.
+        # vcpkgDirectory: '${{ github.workspace }}/vcpkg'
+
+        # If not using a submodule for vcpkg sources, this specifies which commit
+        # id must be checkout from a Git repo. It must not set if using a submodule
+        # for vcpkg.
+        vcpkgGitCommitId: '${{ env.VCPKGGITCOMMITID }}'
         # Since the cache must be invalidated when content of the vcpkg.json file changes, let's
         # compute its hash and append this to the computed cache's key.
-        appendedCacheKey: coturn-cache-vcpkg-msvc-${{matrix.os}}-vc${{matrix.VCPKG_PLATFORM_TOOLSET}}-${{matrix.triplet}}-${{matrix.BUILD_TYPE}}-${{env.VCPKGGITCOMMITID}}_2022_08_18
-        #additionalCachedPaths: ${{ env.VCPKG_ROOT }}/installed
-        vcpkgTriplet: '${{matrix.triplet}}'
-        vcpkgArguments: 'zlib' # openssl pthreads sqlite3 libpq hiredis mongo-c-driver'
+        appendedCacheKey: coturn-msvc-${{matrix.os}}-vc${{matrix.VCPKG_PLATFORM_TOOLSET}}-${{matrix.triplet}}-${{matrix.BUILD_TYPE}}-${{env.VCPKGGITCOMMITID}}
+
+        # This is the glob expression used to locate the vcpkg.json and add its
+        # hash to the cache key. Change it to match a single manifest file you want
+        # to use. 
+        # Note: do not use `${{ github.context }}` to compose the value as it 
+        # contains backslashes that would be misinterpreted. Instead
+        # compose a value relative to the root of the repository using 
+        # `**/path/from/root/of/repo/to/vcpkg.json` to match the desired `vcpkg.json`.
+        # vcpkgJsonGlob: '**/vcpkg.json'
+
+        # This is needed to run `vcpkg install` command (after vcpkg is built) in
+        # the directory where vcpkg.json has been located. Default is false,
+        # It is highly suggested to let `run-cmake` to run vcpkg (i.e. `false`)
+        # (i.e. let CMake run `vcpkg install`) using the vcpkg.cmake toolchain.
+        # runVcpkgInstall: true
 
  #   - name: build libevent
  #     working-directory: ${{env.SOURCE_DIR}}
