@@ -267,7 +267,7 @@ int stun_produce_integrity_key_str(const uint8_t *uname, const uint8_t *realm, c
  		EVP_DigestUpdate(ctx,str,strl);
  		EVP_DigestFinal(ctx,key,&keylen);
  		EVP_MD_CTX_free(ctx);
-#else // OPENSSL_VERSION_NUMBER < 0x10100000L
+#else // OPENSSL_VERSION_NUMBER > 0x10100000L && OPENSSL_VERSION_NUMBER >= 0x30000000L
 		unsigned int keylen = 0;
 		EVP_MD_CTX *ctx = EVP_MD_CTX_new();
 #if defined EVP_MD_CTX_FLAG_NON_FIPS_ALLOW && ! defined(LIBRESSL_VERSION_NUMBER)
