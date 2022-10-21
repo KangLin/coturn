@@ -29,7 +29,9 @@
  */
 
 #include "ns_turn_ioaddr.h"
+#if defined (__linux__)
 #include <netdb.h>
+#endif
 #include <string.h>
 
 //////////////////////////////////////////////////////////////
