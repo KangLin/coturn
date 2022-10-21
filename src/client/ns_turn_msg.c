@@ -1481,7 +1481,7 @@ int stun_attr_add_str(uint8_t* buf, size_t *len, uint16_t attr, const uint8_t* a
     if(alen>0) memcpy(attr_start+4,avalue,alen);
 	
 	// Write 0 padding to not leak data
-	memset(attr_start+4+alen, 0, paddinglen);
+    memset(attr_start + 4 + alen, 0, paddinglen);
 
     return 0;
   }
@@ -1990,7 +1990,7 @@ int stun_check_message_integrity_by_key_str(turn_credential_type ct, uint8_t *bu
 	if(!old_hmac)
 		return -1;
 
-	if(bcmp(old_hmac,new_hmac,shasize))
+	if(memcmp(old_hmac,new_hmac,shasize))
 		return 0;
 
 	return +1;
@@ -2433,7 +2433,7 @@ int decode_oauth_token_normal(const uint8_t *server_name, const encoded_oauth_to
 		    	return -1;
 		    }
 
-		    if(bcmp(check_mac,mac,mac_size)) {
+		    if(memcmp(check_mac,mac,mac_size)) {
 		    	OAUTH_ERROR("%s: token integrity check failed\n",__FUNCTION__);
 		    	return -1;
 		    }
