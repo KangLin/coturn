@@ -228,7 +228,7 @@ start_socket:
                              : (use_tcp ? CLIENT_STREAM_SOCKET_PROTOCOL : CLIENT_DGRAM_SOCKET_PROTOCOL));
   if (clnet_fd < 0) {
     perror("socket");
-    exit(-1);
+    return -1;
   }
 
   if (sock_bind_to_device(clnet_fd, ifname) < 0) {
@@ -289,7 +289,7 @@ start_socket:
         goto start_socket;
       }
       TURN_LOG_FUNC(TURN_LOG_LEVEL_INFO, "%s: cannot SSL connect to remote addr\n", __FUNCTION__);
-      exit(-1);
+      return -1;
     }
   }
 
@@ -360,7 +360,7 @@ beg_allocate:
       clnet_info->fd = -1;
       if (clnet_connect(addr_get_port(&(clnet_info->remote_addr)), clnet_info->rsaddr, (uint8_t *)clnet_info->ifname,
                         clnet_info->lsaddr, verbose, clnet_info) < 0) {
-        exit(-1);
+        return -1;
       }
       reopen_socket = 0;
     }
@@ -419,7 +419,7 @@ beg_allocate:
         allocate_sent = 1;
       } else {
         perror("send");
-        exit(1);
+        return 1;
       }
     }
 
@@ -550,7 +550,7 @@ beg_allocate:
           }
         } else {
           perror("recv");
-          exit(-1);
+          return -1;
           break;
         }
       }
@@ -563,7 +563,7 @@ beg_allocate:
 
   if (!allocate_finished) {
     TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "Cannot complete Allocation\n");
-    exit(-1);
+    return -1;
   }
 
   allocate_rtcp = !allocate_rtcp;
@@ -601,7 +601,7 @@ beg_allocate:
       // Reopen:
       if (clnet_connect(addr_get_port(&(ci.remote_addr)), ci.rsaddr, (unsigned char *)ci.ifname, ci.lsaddr,
                         clnet_verbose, clnet_info) < 0) {
-        exit(-1);
+        return -1;
       }
 
       if (ssl) {
@@ -616,7 +616,7 @@ beg_allocate:
 
     if (af_cycle++ > 32) {
       TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "Cannot complete Refresh\n");
-      exit(-1);
+      return -1;
     }
 
     //==>>refresh request, for an example only:
@@ -668,7 +668,7 @@ beg_allocate:
           }
         } else {
           perror("send");
-          exit(1);
+          return -1;
         }
       }
     }
@@ -714,7 +714,7 @@ beg_allocate:
           }
         } else {
           perror("recv");
-          exit(-1);
+          return -1;
           break;
         }
       }
@@ -756,7 +756,7 @@ beg_bind :
       cb_sent = 1;
     } else {
       perror("send");
-      exit(1);
+      return -1;
     }
   }
 }
@@ -805,7 +805,7 @@ beg_bind :
         }
       } else {
         perror("recv");
-        exit(-1);
+        return -1;
         break;
       }
     }
@@ -857,7 +857,7 @@ beg_cp :
       cp_sent = 1;
     } else {
       perror("send");
-      exit(1);
+      return -1;
     }
   }
 }
@@ -906,7 +906,7 @@ beg_cp :
         }
       } else {
         perror("recv");
-        exit(-1);
+        return -1;
       }
     }
   }
@@ -929,14 +929,16 @@ int start_connection(uint16_t clnet_remote_port0, const char *remote_address0, c
   /* Probe: */
 
   if (clnet_connect(clnet_remote_port0, remote_address0, ifname, local_address, verbose, clnet_info_probe) < 0) {
-    exit(-1);
+    return -1;
   }
 
   uint16_t clnet_remote_port = clnet_remote_port0;
   char remote_address[1025];
   STRCPY(remote_address, remote_address0);
 
-  clnet_allocate(verbose, clnet_info_probe, &relay_addr, default_address_family, remote_address, &clnet_remote_port);
+  int nRet = clnet_allocate(verbose, clnet_info_probe, &relay_addr, default_address_family, remote_address, &clnet_remote_port);
+  if(nRet)
+    return nRet;
 
   /* Real: */
 
@@ -945,18 +947,18 @@ int start_connection(uint16_t clnet_remote_port0, const char *remote_address0, c
     *chn_rtcp = 0;
 
   if (clnet_connect(clnet_remote_port, remote_address, ifname, local_address, verbose, clnet_info) < 0) {
-    exit(-1);
+    return -1;
   }
 
   if (!no_rtcp) {
     if (clnet_connect(clnet_remote_port, remote_address, ifname, local_address, verbose, clnet_info_rtcp) < 0) {
-      exit(-1);
+      return -1;
     }
   }
 
   int af = default_address_family ? default_address_family : get_allocate_address_family(&peer_addr);
   if (clnet_allocate(verbose, clnet_info, &relay_addr, af, NULL, NULL) < 0) {
-    exit(-1);
+    return -1;
   }
 
   if (rare_event())
@@ -965,7 +967,7 @@ int start_connection(uint16_t clnet_remote_port0, const char *remote_address0, c
   if (!no_rtcp) {
     af = default_address_family ? default_address_family : get_allocate_address_family(&peer_addr_rtcp);
     if (clnet_allocate(verbose, clnet_info_rtcp, &relay_addr_rtcp, af, NULL, NULL) < 0) {
-      exit(-1);
+      return -1;
     }
     if (rare_event())
       return 0;
@@ -976,25 +978,25 @@ int start_connection(uint16_t clnet_remote_port0, const char *remote_address0, c
       /* These multiple "channel bind" requests are here only because
        * we are playing with the TURN server trying to screw it */
       if (turn_channel_bind(verbose, chn, clnet_info, &peer_addr_rtcp) < 0) {
-        exit(-1);
+        return -1;
       }
       if (rare_event())
         return 0;
 
       if (turn_channel_bind(verbose, chn, clnet_info, &peer_addr_rtcp) < 0) {
-        exit(-1);
+        return -1;
       }
       if (rare_event())
         return 0;
       *chn = 0;
       if (turn_channel_bind(verbose, chn, clnet_info, &peer_addr) < 0) {
-        exit(-1);
+        return -1;
       }
 
       if (rare_event())
         return 0;
       if (turn_channel_bind(verbose, chn, clnet_info, &peer_addr) < 0) {
-        exit(-1);
+        return -1;
       }
       if (rare_event())
         return 0;
@@ -1018,13 +1020,14 @@ int start_connection(uint16_t clnet_remote_port0, const char *remote_address0, c
           // char sss[128];
           // addr_to_string(&arbaddr,(uint8_t*)sss);
           // printf("%s: 111.111: %s\n",__FUNCTION__,sss);
-          turn_channel_bind(verbose, &chni, clnet_info, &arbaddr);
+          if(turn_channel_bind(verbose, &chni, clnet_info, &arbaddr))
+            return -1;
         }
       }
 
       if (!no_rtcp) {
         if (turn_channel_bind(verbose, chn_rtcp, clnet_info_rtcp, &peer_addr_rtcp) < 0) {
-          exit(-1);
+          return -1;
         }
       }
       if (rare_event())
@@ -1048,7 +1051,8 @@ int start_connection(uint16_t clnet_remote_port0, const char *remote_address0, c
           // addr_to_string(&arbaddr[i],(uint8_t*)sss);
           // printf("%s: 111.111: %s\n",__FUNCTION__,sss);
         }
-        turn_create_permission(verbose, clnet_info, arbaddr, maxi);
+        if(turn_create_permission(verbose, clnet_info, arbaddr, maxi))
+          return -1;
       }
     } else {
 
@@ -1056,12 +1060,12 @@ int start_connection(uint16_t clnet_remote_port0, const char *remote_address0, c
 
       if (before) {
         if (turn_create_permission(verbose, clnet_info, &peer_addr, 1) < 0) {
-          exit(-1);
+          return -1;
         }
         if (rare_event())
           return 0;
         if (turn_create_permission(verbose, clnet_info, &peer_addr_rtcp, 1) < 0) {
-          exit(-1);
+          return -1;
         }
         if (rare_event())
           return 0;
@@ -1085,17 +1089,18 @@ int start_connection(uint16_t clnet_remote_port0, const char *remote_address0, c
           // addr_to_string(&arbaddr,(uint8_t*)sss);
           // printf("%s: 111.111: %s\n",__FUNCTION__,sss);
         }
-        turn_create_permission(verbose, clnet_info, arbaddr, maxi);
+        if(turn_create_permission(verbose, clnet_info, arbaddr, maxi))
+          return -1;
       }
 
       if (!before) {
         if (turn_create_permission(verbose, clnet_info, &peer_addr, 1) < 0) {
-          exit(-1);
+          return -1;
         }
         if (rare_event())
           return 0;
         if (turn_create_permission(verbose, clnet_info, &peer_addr_rtcp, 1) < 0) {
-          exit(-1);
+          return -1;
         }
         if (rare_event())
           return 0;
@@ -1103,12 +1108,12 @@ int start_connection(uint16_t clnet_remote_port0, const char *remote_address0, c
 
       if (!no_rtcp) {
         if (turn_create_permission(verbose, clnet_info_rtcp, &peer_addr_rtcp, 1) < 0) {
-          exit(-1);
+          return -1;
         }
         if (rare_event())
           return 0;
         if (turn_create_permission(verbose, clnet_info_rtcp, &peer_addr, 1) < 0) {
-          exit(-1);
+          return -1;
         }
         if (rare_event())
           return 0;
@@ -1145,14 +1150,16 @@ int start_c2c_connection(uint16_t clnet_remote_port0, const char *remote_address
   /* Probe: */
 
   if (clnet_connect(clnet_remote_port0, remote_address0, ifname, local_address, verbose, clnet_info_probe) < 0) {
-    exit(-1);
+    return -1;
   }
 
   uint16_t clnet_remote_port = clnet_remote_port0;
   char remote_address[1025];
   STRCPY(remote_address, remote_address0);
 
-  clnet_allocate(verbose, clnet_info_probe, &relay_addr1, default_address_family, remote_address, &clnet_remote_port);
+  int nRet = clnet_allocate(verbose, clnet_info_probe, &relay_addr1, default_address_family, remote_address, &clnet_remote_port);
+  if(nRet)
+    return nRet;
 
   if (rare_event())
     return 0;
@@ -1160,51 +1167,51 @@ int start_c2c_connection(uint16_t clnet_remote_port0, const char *remote_address
   /* Real: */
 
   if (clnet_connect(clnet_remote_port, remote_address, ifname, local_address, verbose, clnet_info1) < 0) {
-    exit(-1);
+    return -1;
   }
 
   if (!no_rtcp)
     if (clnet_connect(clnet_remote_port, remote_address, ifname, local_address, verbose, clnet_info1_rtcp) < 0) {
-      exit(-1);
+      return -1;
     }
 
   if (passive_tcp)
     clnet_info2->is_peer = 1;
 
   if (clnet_connect(clnet_remote_port, remote_address, ifname, local_address, verbose, clnet_info2) < 0) {
-    exit(-1);
+    return -1;
   }
 
   if (!no_rtcp)
     if (clnet_connect(clnet_remote_port, remote_address, ifname, local_address, verbose, clnet_info2_rtcp) < 0) {
-      exit(-1);
+      return -1;
     }
 
   if (!no_rtcp) {
 
     if (clnet_allocate(verbose, clnet_info1, &relay_addr1, default_address_family, NULL, NULL) < 0) {
-      exit(-1);
+      return -1;
     }
 
     if (rare_event())
       return 0;
 
     if (clnet_allocate(verbose, clnet_info1_rtcp, &relay_addr1_rtcp, default_address_family, NULL, NULL) < 0) {
-      exit(-1);
+      return -1;
     }
 
     if (rare_event())
       return 0;
 
     if (clnet_allocate(verbose, clnet_info2, &relay_addr2, default_address_family, NULL, NULL) < 0) {
-      exit(-1);
+      return -1;
     }
 
     if (rare_event())
       return 0;
 
     if (clnet_allocate(verbose, clnet_info2_rtcp, &relay_addr2_rtcp, default_address_family, NULL, NULL) < 0) {
-      exit(-1);
+      return -1;
     }
 
     if (rare_event())
@@ -1212,13 +1219,13 @@ int start_c2c_connection(uint16_t clnet_remote_port0, const char *remote_address
   } else {
 
     if (clnet_allocate(verbose, clnet_info1, &relay_addr1, default_address_family, NULL, NULL) < 0) {
-      exit(-1);
+      return -1;
     }
     if (rare_event())
       return 0;
     if (!(clnet_info2->is_peer)) {
       if (clnet_allocate(verbose, clnet_info2, &relay_addr2, default_address_family, NULL, NULL) < 0) {
-        exit(-1);
+        return -1;
       }
       if (rare_event())
         return 0;
@@ -1230,7 +1237,7 @@ int start_c2c_connection(uint16_t clnet_remote_port0, const char *remote_address
 
   if (!do_not_use_channel) {
     if (turn_channel_bind(verbose, chn1, clnet_info1, &relay_addr2) < 0) {
-      exit(-1);
+      return -1;
     }
 
     if (extra_requests) {
@@ -1252,7 +1259,8 @@ int start_c2c_connection(uint16_t clnet_remote_port0, const char *remote_address
         // char sss[128];
         // addr_to_string(&arbaddr,(uint8_t*)sss);
         // printf("%s: 111.111: %s\n",__FUNCTION__,sss);
-        turn_channel_bind(verbose, &chni, clnet_info1, &arbaddr);
+        if(turn_channel_bind(verbose, &chni, clnet_info1, &arbaddr))
+          return -1;
       }
     }
 
@@ -1277,30 +1285,31 @@ int start_c2c_connection(uint16_t clnet_remote_port0, const char *remote_address
         // addr_to_string(&arbaddr[i],(uint8_t*)sss);
         // printf("%s: 111.111: %s\n",__FUNCTION__,sss);
       }
-      turn_create_permission(verbose, clnet_info1, arbaddr, maxi);
+      if(turn_create_permission(verbose, clnet_info1, arbaddr, maxi))
+        return -1;
     }
 
     if (!no_rtcp)
       if (turn_channel_bind(verbose, chn1_rtcp, clnet_info1_rtcp, &relay_addr2_rtcp) < 0) {
-        exit(-1);
+        return -1;
       }
     if (rare_event())
       return 0;
     if (turn_channel_bind(verbose, chn2, clnet_info2, &relay_addr1) < 0) {
-      exit(-1);
+      return -1;
     }
     if (rare_event())
       return 0;
     if (!no_rtcp)
       if (turn_channel_bind(verbose, chn2_rtcp, clnet_info2_rtcp, &relay_addr1_rtcp) < 0) {
-        exit(-1);
+        return -1;
       }
     if (rare_event())
       return 0;
   } else {
 
     if (turn_create_permission(verbose, clnet_info1, &relay_addr2, 1) < 0) {
-      exit(-1);
+      return -1;
     }
 
     if (extra_requests) {
@@ -1318,7 +1327,8 @@ int start_c2c_connection(uint16_t clnet_remote_port0, const char *remote_address
         // char sss[128];
         // addr_to_string(&arbaddr,(uint8_t*)sss);
         // printf("%s: 111.111: %s\n",__FUNCTION__,sss);
-        turn_create_permission(verbose, clnet_info1, &arbaddr, 1);
+        if(turn_create_permission(verbose, clnet_info1, &arbaddr, 1))
+          return -1;
       }
     }
 
@@ -1326,20 +1336,20 @@ int start_c2c_connection(uint16_t clnet_remote_port0, const char *remote_address
       return 0;
     if (!no_rtcp)
       if (turn_create_permission(verbose, clnet_info1_rtcp, &relay_addr2_rtcp, 1) < 0) {
-        exit(-1);
+        return -1;
       }
     if (rare_event())
       return 0;
     if (!(clnet_info2->is_peer)) {
       if (turn_create_permission(verbose, clnet_info2, &relay_addr1, 1) < 0) {
-        exit(-1);
+        return -1;
       }
       if (rare_event())
         return 0;
     }
     if (!no_rtcp)
       if (turn_create_permission(verbose, clnet_info2_rtcp, &relay_addr1_rtcp, 1) < 0) {
-        exit(-1);
+        return -1;
       }
     if (rare_event())
       return 0;
@@ -1385,7 +1395,7 @@ int turn_tcp_connect(int verbose, app_ur_conn_info *clnet_info, ioa_addr *peer_a
         cp_sent = 1;
       } else {
         perror("send");
-        exit(1);
+        return -1;
       }
     }
   }
@@ -1430,7 +1440,7 @@ beg_cb :
       if (errorOK)
         return 0;
       perror("send");
-      exit(1);
+      return -1;
     }
   }
 }
@@ -1483,7 +1493,7 @@ beg_cb :
         if (errorOK)
           return 0;
         perror("recv");
-        exit(-1);
+        return -1;
       }
     }
   }
@@ -1491,7 +1501,7 @@ beg_cb :
   return 0;
 }
 
-void tcp_data_connect(app_ur_session *elem, uint32_t cid) {
+int tcp_data_connect(app_ur_session *elem, uint32_t cid) {
   int clnet_fd;
   int connect_cycle = 0;
 
@@ -1500,7 +1510,7 @@ again:
   clnet_fd = socket(elem->pinfo.remote_addr.ss.sa_family, CLIENT_STREAM_SOCKET_TYPE, CLIENT_STREAM_SOCKET_PROTOCOL);
   if (clnet_fd < 0) {
     perror("socket");
-    exit(-1);
+    return -1;
   }
 
   if (sock_bind_to_device(clnet_fd, client_ifname) < 0) {
@@ -1536,7 +1546,7 @@ again:
               socket(elem->pinfo.remote_addr.ss.sa_family, CLIENT_STREAM_SOCKET_TYPE, CLIENT_STREAM_SOCKET_PROTOCOL);
           if (clnet_fd < 0) {
             perror("socket");
-            exit(-1);
+            return -1;
           }
           if (sock_bind_to_device(clnet_fd, client_ifname) < 0) {
             TURN_LOG_FUNC(TURN_LOG_LEVEL_INFO, "Cannot bind client socket to device %s\n", client_ifname);
@@ -1558,7 +1568,7 @@ again:
         } else {
           perror("connect");
           TURN_LOG_FUNC(TURN_LOG_LEVEL_INFO, "%s: cannot connect to remote addr\n", __FUNCTION__);
-          exit(-1);
+          return -1;
         }
       } else {
         break;
@@ -1576,7 +1586,7 @@ again:
         goto again;
       }
       TURN_LOG_FUNC(TURN_LOG_LEVEL_INFO, "%s: cannot SSL connect to remote addr\n", __FUNCTION__);
-      exit(-1);
+      return -1;
     }
   }
 
@@ -1594,6 +1604,7 @@ again:
 
     addr_debug_print(clnet_verbose, &(elem->pinfo.remote_addr), "TCP data network connected to");
   }
+  return 0;
 }
 
 /////////////////////////////////////////////////

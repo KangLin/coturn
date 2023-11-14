@@ -671,10 +671,14 @@ static int client_read(app_ur_session *elem, int is_tcp_data, app_tcp_conn_info 
           sar = stun_attr_get_next_str(elem->in_buffer.buf, elem->in_buffer.len, sar);
         }
         if (negative_test) {
-          tcp_data_connect(elem, (uint64_t)turn_random());
+          int nRet = tcp_data_connect(elem, (uint64_t)turn_random());
+          if(nRet)
+            return nRet;
         } else {
           /* positive test */
-          tcp_data_connect(elem, cid);
+          int nRet = tcp_data_connect(elem, cid);
+          if(nRet)
+            return nRet;
         }
         return rc;
       } else if (method != STUN_METHOD_DATA) {
@@ -721,7 +725,9 @@ static int client_read(app_ur_session *elem, int is_tcp_data, app_tcp_conn_info 
           }
           sar = stun_attr_get_next_str(elem->in_buffer.buf, elem->in_buffer.len, sar);
         }
-        tcp_data_connect(elem, cid);
+        int nRet = tcp_data_connect(elem, cid);
+        if(nRet)
+          return nRet;
       }
 
       return rc;
@@ -729,7 +735,9 @@ static int client_read(app_ur_session *elem, int is_tcp_data, app_tcp_conn_info 
                                               sizeof(err_msg), clnet_info->realm, clnet_info->nonce,
                                               clnet_info->server_name, &(clnet_info->oauth))) {
       if (is_TCP_relay() && (stun_get_method(&(elem->in_buffer)) == STUN_METHOD_CONNECT)) {
-        turn_tcp_connect(clnet_verbose, &(elem->pinfo), &(elem->pinfo.peer_addr));
+        int nRet = turn_tcp_connect(clnet_verbose, &(elem->pinfo), &(elem->pinfo.peer_addr));
+        if(nRet)
+          return -1;
       } else if (stun_get_method(&(elem->in_buffer)) == STUN_METHOD_REFRESH) {
         refresh_channel(elem, stun_get_method(&elem->in_buffer), 600);
       }
@@ -961,7 +969,7 @@ static void run_events(int short_burst) {
 
 static int start_client(const char *remote_address, int port, const unsigned char *ifname, const char *local_address,
                         int messagenumber, int i) {
-
+  int nRet = 0;
   app_ur_session *ss = create_new_ss();
   app_ur_session *ss_rtcp = NULL;
 
@@ -981,9 +989,11 @@ static int start_client(const char *remote_address, int port, const unsigned cha
   uint16_t chnum = 0;
   uint16_t chnum_rtcp = 0;
 
-  start_connection(port, remote_address, ifname, local_address, clnet_verbose, &clnet_info_probe, clnet_info, &chnum,
+  nRet = start_connection(port, remote_address, ifname, local_address, clnet_verbose, &clnet_info_probe, clnet_info, &chnum,
                    clnet_info_rtcp, &chnum_rtcp);
-
+  if(nRet)
+    return nRet;
+  
   if (clnet_info_probe.ssl) {
     SSL_free(clnet_info_probe.ssl);
     clnet_info_probe.fd = -1;
@@ -998,15 +1008,27 @@ static int start_client(const char *remote_address, int port, const unsigned cha
     socket_set_nonblocking(clnet_info_rtcp->fd);
 
   struct event *ev = event_new(client_event_base, clnet_info->fd, EV_READ | EV_PERSIST, client_input_handler, ss);
-
-  event_add(ev, NULL);
-
+  if(!ev)
+    return -1;
+  nRet = event_add(ev, NULL);
+  if(nRet) {
+    event_free(ev);
+    return nRet;
+  }
+  
   struct event *ev_rtcp = NULL;
-
   if (!no_rtcp) {
     ev_rtcp = event_new(client_event_base, clnet_info_rtcp->fd, EV_READ | EV_PERSIST, client_input_handler, ss_rtcp);
-
-    event_add(ev_rtcp, NULL);
+    if(!ev_rtcp) {
+      event_free(ev);
+      return -1;
+    }
+    nRet = event_add(ev_rtcp, NULL);
+    if(nRet) {
+      event_free(ev);
+      event_free(ev_rtcp);
+      return nRet;
+    }
   }
 
   ss->state = UR_STATE_READY;
@@ -1074,9 +1096,11 @@ static int start_c2c(const char *remote_address, int port, const unsigned char *
   uint16_t chnum2 = 0;
   uint16_t chnum2_rtcp = 0;
 
-  start_c2c_connection(port, remote_address, ifname, local_address, clnet_verbose, &clnet_info_probe, clnet_info1,
+  int nRet = start_c2c_connection(port, remote_address, ifname, local_address, clnet_verbose, &clnet_info_probe, clnet_info1,
                        &chnum1, clnet_info1_rtcp, &chnum1_rtcp, clnet_info2, &chnum2, clnet_info2_rtcp, &chnum2_rtcp);
-
+  if(nRet)
+    return -1;
+  
   if (clnet_info_probe.ssl) {
     SSL_free(clnet_info_probe.ssl);
     clnet_info_probe.fd = -1;
@@ -1313,7 +1337,7 @@ static void timer_handler(evutil_socket_t fd, short event, void *arg) {
   }
 }
 
-void start_mclient(const char *remote_address, int port, const unsigned char *ifname, const char *local_address,
+int start_mclient(const char *remote_address, int port, const unsigned char *ifname, const char *local_address,
                    int messagenumber, int mclient) {
 
   if (mclient < 1)
@@ -1351,7 +1375,7 @@ void start_mclient(const char *remote_address, int port, const unsigned char *if
         if (!dos)
           usleep(SLEEP_INTERVAL);
         if (start_c2c(remote_address, port, ifname, local_address, messagenumber, i << 2) < 0) {
-          exit(-1);
+          return -1;
         }
         tot_clients += 4;
       }
@@ -1360,7 +1384,7 @@ void start_mclient(const char *remote_address, int port, const unsigned char *if
         if (!dos)
           usleep(SLEEP_INTERVAL);
         if (start_c2c(remote_address, port, ifname, local_address, messagenumber, i << 1) < 0) {
-          exit(-1);
+          return -1;
         }
         tot_clients += 2;
       }
@@ -1370,7 +1394,7 @@ void start_mclient(const char *remote_address, int port, const unsigned char *if
         if (!dos)
           usleep(SLEEP_INTERVAL);
         if (start_client(remote_address, port, ifname, local_address, messagenumber, i << 1) < 0) {
-          exit(-1);
+          return -1;
         }
         tot_clients += 2;
       }
@@ -1379,14 +1403,14 @@ void start_mclient(const char *remote_address, int port, const unsigned char *if
         if (!dos)
           usleep(SLEEP_INTERVAL);
         if (start_client(remote_address, port, ifname, local_address, messagenumber, i) < 0) {
-          exit(-1);
+          return -1;
         }
         tot_clients++;
       }
   }
 
   if (dos)
-    _exit(0);
+    return 0;
 
   total_clients = tot_clients;
 
@@ -1412,7 +1436,7 @@ void start_mclient(const char *remote_address, int port, const unsigned char *if
         int j = 0;
         for (j = i + 1; j < total_clients; j++) {
           if (turn_tcp_connect(clnet_verbose, &(elems[i]->pinfo), &(elems[j]->pinfo.relay_addr)) < 0) {
-            exit(-1);
+            return -1;
           }
         }
       }
@@ -1519,6 +1543,8 @@ void start_mclient(const char *remote_address, int port, const unsigned char *if
                 (unsigned long)max_jitter);
 
   free(elems);
+  
+  return 0;
 }
 
 ///////////////////////////////////////////

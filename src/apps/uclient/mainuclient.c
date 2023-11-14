@@ -213,17 +213,17 @@ int main(int argc, char **argv) {
 
       if (convert_oauth_key_data(&okd_array[0], &okey_array[0], err_msg, err_msg_size) < 0) {
         fprintf(stderr, "%s\n", err_msg);
-        exit(-1);
+        return -1;
       }
 
       if (convert_oauth_key_data(&okd_array[1], &okey_array[1], err_msg, err_msg_size) < 0) {
         fprintf(stderr, "%s\n", err_msg);
-        exit(-1);
+        return -1;
       }
 
       if (convert_oauth_key_data(&okd_array[2], &okey_array[2], err_msg, err_msg_size) < 0) {
         fprintf(stderr, "%s\n", err_msg);
-        exit(-1);
+        return -1;
       }
     } break;
     case 'a':
@@ -251,7 +251,7 @@ int main(int argc, char **argv) {
       char *fn = find_config_file(optarg, 1);
       if (!fn) {
         fprintf(stderr, "ERROR: file %s not found\n", optarg);
-        exit(-1);
+        return -1;
       }
       STRCPY(ca_cert_file, fn);
     } break;
@@ -361,7 +361,7 @@ int main(int argc, char **argv) {
       char *fn = find_config_file(optarg, 1);
       if (!fn) {
         fprintf(stderr, "ERROR: file %s not found\n", optarg);
-        exit(-1);
+        return -1;
       }
       STRCPY(cert_file, fn);
       free(fn);
@@ -370,14 +370,14 @@ int main(int argc, char **argv) {
       char *fn = find_config_file(optarg, 1);
       if (!fn) {
         fprintf(stderr, "ERROR: file %s not found\n", optarg);
-        exit(-1);
+        return -1;
       }
       STRCPY(pkey_file, fn);
       free(fn);
     } break;
     default:
       fprintf(stderr, "%s\n", Usage);
-      exit(1);
+      return -1;
     }
   }
 
@@ -460,7 +460,7 @@ int main(int argc, char **argv) {
 
   if (optind >= argc) {
     fprintf(stderr, "%s\n", Usage);
-    exit(-1);
+    return -1;
   }
 
   if (!c2c) {
@@ -511,7 +511,7 @@ int main(int argc, char **argv) {
     } else {
 #if !DTLS_SUPPORTED
       fprintf(stderr, "ERROR: DTLS is not supported.\n");
-      exit(-1);
+      return -1;
 #else
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
       if (OPENSSL_VERSION_NUMBER < 0x10000000L) {
@@ -547,23 +547,23 @@ int main(int argc, char **argv) {
     for (sslind = 0; sslind < root_tls_ctx_num; sslind++) {
       if (!SSL_CTX_use_certificate_chain_file(root_tls_ctx[sslind], cert_file)) {
         TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "\nERROR: could not load certificate chain file!\n");
-        exit(-1);
+        return -1;
       }
 
       if (!SSL_CTX_use_PrivateKey_file(root_tls_ctx[sslind], pkey_file, SSL_FILETYPE_PEM)) {
         TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "\nERROR: could not load private key file!\n");
-        exit(-1);
+        return -1;
       }
 
       if (!SSL_CTX_check_private_key(root_tls_ctx[sslind])) {
         TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "\nERROR: invalid private key!\n");
-        exit(-1);
+        return -1;
       }
 
       if (use_ca_cert) {
         if (!SSL_CTX_load_verify_locations(root_tls_ctx[sslind], ca_cert_file, NULL)) {
           TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "ERROR: cannot load CA from file: %s\n", ca_cert_file);
-          exit(-1);
+          return -1;
         }
 
         /* Set to require peer (client) certificate verification */
@@ -577,7 +577,6 @@ int main(int argc, char **argv) {
     }
   }
 
-  start_mclient(argv[optind], port, client_ifname, local_addr, messagenumber, mclient);
+  return start_mclient(argv[optind], port, client_ifname, local_addr, messagenumber, mclient);
 
-  return 0;
 }
